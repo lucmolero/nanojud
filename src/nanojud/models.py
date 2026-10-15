@@ -112,3 +112,4 @@ class ResumoProcesso(TypedDict):
     mensagem: str
     erro: NotRequired[str]
     fonte: NotRequired[str]
+    situacao: NotRequired[str]

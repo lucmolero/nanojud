@@ -66,6 +66,27 @@
 >
 > A biblioteca não contorna autenticação, senha, captcha, segredo de justiça ou restrições técnicas das fontes consultadas.
 
+## Primeiros passos em 2 minutos
+
+Advogado(a) e não programa? Siga o **[Guia do advogado](docs/guia-do-advogado.md)**, com instalação passo a passo no Windows, tarefas do dia a dia e solução de problemas. Em resumo, com o Python 3.10 ou mais novo instalado:
+
+```bash
+python -m pip install "nanojud[pdf]"
+nanojud consultar 0015020-23.2010.8.26.0053
+```
+
+```text
+Processo 0015020-23.2010.8.26.0053
+------------------------------------------------------------
+Classe:               Mandado de Segurança Cível
+Vara / órgão:         7ª Vara de Fazenda Pública
+Última movimentação:  23/08/2026
+                      Certidão de Não Consulta ao Teor da Informação - Contagem de Prazo do Ato
+Fonte:                eSAJ/TJSP
+```
+
+Outros comandos: `partes`, `linha-do-tempo`, `djen`, `datajud` e `extrato`. Use `nanojud --ajuda` para ver todos.
+
 ## Visão geral
 
 O `nanojud` é uma camada local e auditável para consultar, estruturar e organizar dados judiciais públicos.
@@ -391,57 +412,32 @@ python -m nanojud.cli --help
 
 # Uso pela CLI
 
-## Consultar um processo
+A CLI fala português e, no terminal, mostra o resultado em texto legível. Ao redirecionar a saída ou usar `--out`, gera JSON.
 
 ```bash
-nanojud search 0015020-23.2010.8.26.0053
-```
+# resumo: classe, vara, situação e última movimentação
+nanojud consultar 0015020-23.2010.8.26.0053
 
-## Gerar um extrato em JSON
+# partes e advogados por polo (TJSP)
+nanojud partes 0015020-23.2010.8.26.0053
 
-```bash
+# os 20 andamentos mais recentes, de todas as fontes
+nanojud linha-do-tempo 0015020-23.2010.8.26.0053 --recentes-primeiro --limite 20
+
+# novidades desde uma data
+nanojud linha-do-tempo 0015020-23.2010.8.26.0053 --desde 2026-08-01
+
+# intimações e publicações do DJEN
+nanojud djen 0015020-23.2010.8.26.0053 --desde 2026-01-01
+
+# qualquer tribunal, pelo DataJud
+nanojud datajud 0032991-06.2012.8.19.0066 --out datajud.json
+
+# extrato completo, para guardar ou entregar a uma IA
 nanojud extrato 0015020-23.2010.8.26.0053 --out extrato.json
 ```
 
-## Consultar partes
-
-```bash
-nanojud partes 0015020-23.2010.8.26.0053
-```
-
-## Consultar o DJEN
-
-```bash
-nanojud djen 0015020-23.2010.8.26.0053 --out djen.json
-```
-
-## Consultar o DataJud
-
-```bash
-nanojud datajud 0015020-23.2010.8.26.0053 --out datajud.json
-```
-
-## Gerar uma timeline consolidada
-
-```bash
-nanojud timeline 0015020-23.2010.8.26.0053 \
-  --source esaj \
-  --source djen \
-  --source datajud \
-  --recent-first \
-  --limit 20 \
-  --out timeline.json
-```
-
-## Executar pela instalação Python
-
-```bash
-python -m nanojud.cli search 0015020-23.2010.8.26.0053
-```
-
-Consulte o guia completo:
-
-* [Guia da CLI](docs/cli.md)
+Se o terminal não reconhecer `nanojud`, use `python -m nanojud`. Consulte o [Guia da CLI](docs/cli.md) e o [Guia do advogado](docs/guia-do-advogado.md).
 
 ---
 

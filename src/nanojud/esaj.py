@@ -947,6 +947,11 @@ def ler_pecas_publicas(
                 texto, status = extrair_texto_pdf_bytes(conteudo, max_chars=max_chars)
                 registro["status"] = status
                 registro["texto"] = texto
+                if status == "pdf_parser_indisponivel":
+                    registro["mensagem"] = (
+                        "O documento é PDF e falta o leitor de PDF. Instale com: "
+                        'python -m pip install "nanojud[pdf]"'
+                    )
                 registro["texto_chars"] = len(texto)
                 registro["truncado"] = bool(max_chars and len(texto) >= max_chars)
             else:

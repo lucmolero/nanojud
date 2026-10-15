@@ -288,6 +288,7 @@ def _resumo_do_extrato(extrato: Extrato) -> ResumoProcesso:
         "url": extrato.get("origem", {}).get("url_final", ""),
         "status": extrato.get("status", "ok"),
         "mensagem": "Processo consultado com sucesso",
+        "situacao": basicos.get("situacao", ""),
     }
 
 

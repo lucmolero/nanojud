@@ -28,6 +28,7 @@ extra_css:
   - stylesheets/landing.css
 nav:
   - Início: index.md
+  - Guia do Advogado: guia-do-advogado.md
   - Quickstart: quickstart.md
   - Instalação Com IA: instalacao-com-ia.md
   - Para Advogados: para-advogados.md
