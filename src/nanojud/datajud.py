@@ -11,8 +11,9 @@ from typing import Any, cast
 
 import requests
 
-from .exceptions import AcessoRestrito, ConsultaIndisponivel
-from .normalization import somente_digitos
+from .exceptions import AcessoRestrito, ConsultaIndisponivel, ProcessoNaoEncontrado
+from .models import ResumoProcesso
+from .normalization import normalizar_data, somente_digitos
 from .schemas import DataJudExtraction
 from .sources import DATAJUD
 from .utils import validar_numero_cnj
@@ -294,4 +295,31 @@ def _normalizar_parte(parte: dict[str, Any]) -> dict[str, Any]:
         "polo": str(parte.get("polo") or ""),
         "advogados": advogados,
         "payload_origem": parte,
+    }
+
+
+def resumo_do_datajud(extracao: dict[str, Any]) -> ResumoProcesso:
+    """Resumo objetivo a partir do DataJud, para tribunais sem consulta eSAJ."""
+    if extracao.get("status") != "ok":
+        raise ProcessoNaoEncontrado("O DataJud não retornou este processo.")
+    movimentos = extracao.get("movimentos") or []
+    ultima: dict[str, Any] = max(movimentos, key=lambda m: m.get("data_hora") or "", default={})
+    data = normalizar_data(ultima.get("data"))["iso"]
+    ano, mes, dia = (data.split("-") + ["", "", ""])[:3] if data else ("", "", "")
+    complementos = ultima.get("complementos") or ""
+    titulo = str(ultima.get("nome") or "")
+    assuntos = extracao.get("assuntos") or []
+    return {
+        "numero": extracao.get("numero_cnj", ""),
+        "classe": extracao.get("classe", ""),
+        "assunto": str((assuntos[0] or {}).get("nome", "")) if assuntos else "",
+        "foro": extracao.get("tribunal", ""),
+        "vara": extracao.get("orgao_julgador", ""),
+        "juiz": "",
+        "ultima_movimentacao": f"{titulo} - {complementos}" if complementos else titulo,
+        "ultima_data": f"{dia}/{mes}/{ano}" if data else "",
+        "url": (extracao.get("metadata") or {}).get("source_url", ""),
+        "status": "ok",
+        "mensagem": "Consulta via DataJud (processo fora do TJSP)",
+        "fonte": "datajud",
     }

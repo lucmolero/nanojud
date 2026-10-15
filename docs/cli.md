@@ -14,7 +14,7 @@ nanojud --help
 nanojud search 0015020-23.2010.8.26.0053
 ```
 
-Imprime um JSON resumido com dados básicos e última movimentação encontrada.
+Imprime um JSON resumido com dados básicos e última movimentação encontrada. Fora do TJSP o resumo vem do DataJud (`fonte: datajud`), sem partes, foro nem juiz.
 
 ## Gerar extrato
 

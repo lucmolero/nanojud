@@ -67,8 +67,20 @@ def normalizar_texto_extraido(texto: str) -> str:
     return limpar(texto)
 
 
+_UFS = "AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|RJ|RN|RS|RO|RR|SC|SP|SE|TO"
+
+
 def normalizar_oab(texto: str) -> str:
-    """Normaliza uma OAB preservando apenas componentes tecnicos reconheciveis."""
-    valor = limpar(texto).upper()
-    valor = re.sub(r"\bOAB\b[:\s-]*", "", valor)
-    return re.sub(r"\s+", " ", valor).strip()
+    """Normaliza uma OAB para ``NUMERO/UF`` (ex.: ``140969/SP``; suplementar: ``12345A/RJ``).
+
+    Aceita ``OAB/SP 140.969``, ``OAB-RJ 12345-A``, ``SP269542`` e ``269542/SP``. Quando não
+    reconhece número ou UF, devolve o texto limpo, sem a palavra OAB.
+    """
+    valor = re.sub(r"\bOAB\b", " ", limpar(texto).upper())
+    uf = re.search(rf"(?<![A-Z])({_UFS})(?![A-Z])", valor)
+    sem_uf = (valor[: uf.start()] + " " + valor[uf.end() :]) if uf else valor
+    numero = re.search(r"(\d{1,3}(?:\.\d{3})+|\d+)\s*-?\s*([A-Z])?(?![A-Z0-9])", sem_uf)
+    if not numero:
+        return re.sub(r"\s+", " ", re.sub(r"^[\s:/-]+", "", valor)).strip()
+    digitos = numero.group(1).replace(".", "")
+    return f"{digitos}{numero.group(2) or ''}" + (f"/{uf.group(1)}" if uf else "")

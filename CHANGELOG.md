@@ -6,6 +6,20 @@
 
 ### Corrigido
 
+- Leitura de pecas (`ler_pecas`, `baixar_pecas`, CLI `ler-pecas`/`baixar` e MCP `ler_documentos_publicos`): a pasta digital so abre na sessao que consultou o processo e carregou a pagina de movimentacoes do documento. Antes, ao ler a partir de um extrato salvo (JSON), o eSAJ devolvia a tela "Sua sessao expirou" e a lib a reportava como texto do documento. Agora a sessao e preparada (processo reaberto, paginas de movimentacoes ate o documento, metadados refeitos), e a tela de sessao expirada vira `status: sessao_expirada`, nunca texto.
+- A saida de `ler_pecas` traz `pasta_digital` resumida (`status` e `paginas`), sem a URL com ticket.
+- "Processo nao encontrado" do eSAJ passa a dizer que pode ser processo sigiloso, de outro sistema ou numero inexistente.
+- `normalizar_oab` devolve a forma canonica `NUMERO/UF` (`140969/SP`, suplementar `12345A/RJ`); antes `OAB/SP 140.969` virava `/SP 140.969`.
+
+### Adicionado
+
+- Ritmo minimo de 1,1 s entre consultas de processo ao eSAJ, valendo para todo o processo Python (o eSAJ recusa intervalos menores por IP). Um lote de 4 processos passou de ~13 s para ~6 s, sem consultas perdidas.
+- `search` (API, cliente e CLI) funciona fora do TJSP usando o DataJud (sem partes, foro e juiz; `fonte: datajud`).
+- `NanoJudClient.search_processo` reaproveita o extrato ja buscado pelo mesmo cliente, sem repetir a consulta ao eSAJ.
+- CLI `djen --desde` (mesmo que `--data-inicio`).
+
+### Corrigido
+
 - eSAJ: consultas em sequencia muito rapida recebiam o aviso de "multiplas consultas simultaneas" no lugar do processo e eram reportadas como processo nao encontrado. Agora a pagina e tentada de novo apos uma pausa e, se o bloqueio persistir, o erro e de indisponibilidade com mensagem clara.
 - `partes.todas` vinha vazio em processos que so trazem a tabela de partes principais; passa a repetir as principais.
 - eSAJ: `dados_basicos` ganha `situacao` (ex.: Extinto) e `etiquetas` do cabecalho do processo.

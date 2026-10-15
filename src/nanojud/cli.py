@@ -118,7 +118,13 @@ def main(argv: list[str] | None = None) -> int:
 
     djen_cmd = sub.add_parser("djen", help="Consultar comunicações DJEN")
     djen_cmd.add_argument("numero", help="Número CNJ do processo")
-    djen_cmd.add_argument("--data-inicio", default="", help="Data inicial ISO yyyy-mm-dd")
+    djen_cmd.add_argument(
+        "--data-inicio",
+        "--desde",
+        dest="data_inicio",
+        default="",
+        help="Data inicial ISO yyyy-mm-dd (--desde é o mesmo que --data-inicio)",
+    )
     djen_cmd.add_argument(
         "--out", default=None, help="Arquivo de saída JSON (sem ele, imprime na tela)"
     )

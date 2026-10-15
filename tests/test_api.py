@@ -109,6 +109,11 @@ def test_resumo_rapido_usa_partes_do_extrato(monkeypatch):
 def test_baixar_pecas_delega_para_esaj(monkeypatch):
     chamadas = {}
     monkeypatch.setattr(api.esaj, "criar_session", lambda: object())
+    monkeypatch.setattr(
+        api.esaj,
+        "preparar_documentos",
+        lambda s, numero, mov, limite: chamadas.update(numero=numero),
+    )
 
     def fake_baixar(session, movimentos, destino, limite, sobrescrever):
         chamadas["movimentos"] = movimentos
@@ -129,6 +134,11 @@ def test_baixar_pecas_delega_para_esaj(monkeypatch):
 def test_ler_pecas_delega_para_esaj(monkeypatch):
     chamadas = {}
     monkeypatch.setattr(api.esaj, "criar_session", lambda: object())
+    monkeypatch.setattr(
+        api.esaj,
+        "preparar_documentos",
+        lambda s, numero, mov, limite: chamadas.update(numero=numero),
+    )
 
     def fake_ler(session, movimentos, limite, max_chars):
         chamadas["movimentos"] = movimentos
@@ -143,6 +153,7 @@ def test_ler_pecas_delega_para_esaj(monkeypatch):
     assert resultado == [{"status": "texto_extraido"}]
     assert chamadas["movimentos"][0]["documentos"][0]["cd_documento"] == "123"
     assert chamadas["max_chars"] == 1200
+    assert chamadas["numero"]  # a sessão é preparada com o número do processo
 
 
 def test_get_extrato_delega_parametros(monkeypatch):
