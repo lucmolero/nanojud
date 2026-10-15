@@ -222,7 +222,9 @@ def test_incidentes_ignora_linha_de_espacamento_vazia():
       <tr>
         <td>12/12/2018</td>
         <td>
-          <a class="incidente" href="/cpopg/show.do?processo.codigo=INC">Requisição de Pequeno Valor</a>
+          <a class="incidente" href="/cpopg/show.do?processo.codigo=INC">
+            Requisição de Pequeno Valor
+          </a>
         </td>
       </tr>
     </table>
