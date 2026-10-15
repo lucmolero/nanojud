@@ -77,4 +77,5 @@ class ExtractionEnvelope(TypedDict):
     warnings: list[str]
     errors: list[ExtractionError]
     source_status: dict[str, SourceStatus]
+    divergencias: NotRequired[list[dict[str, Any]]]
     raw: NotRequired[dict[str, Any]]

@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Adicionado
+
+- Envelope de `extract_process` ganha `divergencias`: compara classe, data de distribuicao/ajuizamento e ultima movimentacao entre eSAJ e DataJud, e informa quando ha mais de um grau no DataJud ou comunicacoes de incidentes no DJEN.
+- `normalizar_data` aceita o formato compacto do DataJud (`20120910171334`).
+
 ### Corrigido
 
 - DataJud: consulta todos os graus do numero CNJ (antes `size: 1` pegava um registro arbitrario). O grau mais baixo define os dados principais, `graus` resume cada registro e cada movimento ganha `grau`.
