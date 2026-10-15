@@ -281,6 +281,8 @@ Trata-se de um Mandado de Segurança Cível envolvendo sindicato e Administraç�
 
 Em uma validação manual realizada em 31 de julho de 2026, o projeto obteve dados do eSAJ/TJSP, DataJud/CNJ e DJEN e gerou uma timeline agregada sem falhas registradas naquela execução.
 
+O eSAJ passou a carregar as movimentações sob demanda depois dessa validação, e a lib foi ajustada em outubro de 2026. Neste processo, o DataJud indexa apenas o registro de um incidente (Requisição de Pequeno Valor) sob o mesmo número, e por isso `divergencias` no envelope aponta diferenças de classe, distribuição e última movimentação em relação ao eSAJ. Isso vem das fontes, não da lib.
+
 Os resultados podem mudar, pois dependem de fontes externas atualizadas continuamente.
 
 Consulte a demonstração completa em:

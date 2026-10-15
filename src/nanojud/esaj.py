@@ -595,14 +595,14 @@ def extrair_relacionados(soup: BeautifulSoup) -> dict[str, list[dict[str, str]]]
         link = tds[1].find("a", class_="incidente")
         texto = limpar(tds[1].get_text(" ", strip=True))
         match = re.search(r"\((\d{7}-\d{2}\.\d{4}\.8\.26\.\d{4})\)", texto)
-        incidentes.append(
-            {
-                "recebido_em": limpar(tds[0].get_text(" ", strip=True)),
-                "classe": limpar(link.get_text(" ", strip=True)) if link else texto,
-                "numero": match.group(1) if match else "",
-                "href": urljoin(f"{ESAJ_BASE}/", link.get("href", "")) if link else "",
-            }
-        )
+        incidente = {
+            "recebido_em": limpar(tds[0].get_text(" ", strip=True)),
+            "classe": limpar(link.get_text(" ", strip=True)) if link else texto,
+            "numero": match.group(1) if match else "",
+            "href": urljoin(f"{ESAJ_BASE}/", link.get("href", "")) if link else "",
+        }
+        if any(incidente.values()):  # a tabela real tem uma linha de espaçamento vazia
+            incidentes.append(incidente)
 
     apensos = []
     tabela_apensos = tabela_apos_titulo(soup, r"Apensos")
