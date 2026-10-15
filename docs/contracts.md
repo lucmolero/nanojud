@@ -28,7 +28,7 @@ Retorna `ResumoProcesso`:
 
 Retorna `Extrato` com:
 
-- `origem`: fonte, tribunal, URL final e data da coleta.
+- `origem`: fonte, tribunal, URL final e data da coleta, além de `movimentacoes_completas` e `aviso_movimentacoes` (corte por limite ou falha parcial na paginação).
 - `dados_basicos`: número, classe, assunto, foro, vara, juiz e campos auxiliares.
 - `partes`: partes principais, todas as partes e polos classificados.
 - `movimentacoes`: data, título, teor, metadados e documentos vinculados.
@@ -57,7 +57,8 @@ Retorna envelope versionado com dados separados por fonte:
   },
   "timeline": [],
   "warnings": [],
-  "errors": []
+  "errors": [],
+  "divergencias": []
 }
 ```
 

@@ -96,10 +96,14 @@ def montar_url_busca(numero: str) -> str:
     return f"{ESAJ_BASE}/search.do?{urlencode(params)}"
 
 
-def _validar_url_esaj(entrada: str) -> None:
+def _validar_url_esaj(entrada: str, prefixos: tuple[str, ...] = ("/cpopg/",)) -> None:
     parsed = urlparse(entrada)
-    if parsed.netloc != "esaj.tjsp.jus.br" or not parsed.path.startswith("/cpopg/"):
-        raise URLInvalida("URL deve ser do domínio esaj.tjsp.jus.br no caminho /cpopg/.")
+    if (
+        parsed.scheme != "https"
+        or parsed.netloc != "esaj.tjsp.jus.br"
+        or not parsed.path.startswith(prefixos)
+    ):
+        raise URLInvalida("URL deve ser https://esaj.tjsp.jus.br/cpopg/.")
 
 
 def _get(session: requests.Session, url: str, **kwargs: Any) -> requests.Response:
@@ -671,6 +675,8 @@ def extrair_request_scope(text: str) -> str | None:
 
 
 def obter_metadados_pasta_documento(session: requests.Session, doc: Documento) -> dict[str, Any]:
+    # o extrato pode vir de um JSON externo; nunca requisitar fora do eSAJ
+    _validar_url_esaj(doc["href"], ("/cpopg/", "/pastadigital/"))
     viewer = _get(session, doc["href"], timeout=30, allow_redirects=True)
     scope_json = extrair_request_scope(viewer.text)
     if not scope_json:

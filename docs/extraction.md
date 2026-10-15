@@ -53,6 +53,19 @@ Cada registro preserva:
 - `documentos`;
 - `payload_origem`, quando `include_raw=True`.
 
+## DataJud com mais de um grau
+
+O DataJud guarda um registro por grau (G1, TR, G2...) para o mesmo número CNJ. O resultado consolida todos: o menor grau define `classe`, `orgao_julgador` e `grau`; `graus` resume cada registro (classe, órgão, data de ajuizamento e total de movimentos); e cada movimento traz o `grau` de origem.
+
+## Divergências entre fontes
+
+O envelope inclui `divergencias`, calculado só quando as fontes envolvidas retornaram dados:
+
+- `severidade: "divergencia"`: classe, data de distribuição (eSAJ) x ajuizamento (DataJud) e data da última movimentação diferentes.
+- `severidade: "informacao"`: DataJud com mais de um grau e comunicações do DJEN que são de incidentes (`incidente` preenchido, ex.: `/47`).
+
+Cada item traz `campo`, `mensagem` e `valores` por fonte. A lib aponta a diferença; quem decide qual fonte está certa é você, conferindo no sistema oficial.
+
 ## CLI
 
 ```bash

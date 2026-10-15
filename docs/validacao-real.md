@@ -21,6 +21,9 @@ O corpus de regressão deve cobrir:
 - processo não encontrado;
 - página de lista de processos antes do detalhe;
 - processo com muitas movimentações;
+- movimentações carregadas sob demanda (`carregarMovimentacoesAjax.do`, paginação por cursor);
+- processo com registros em mais de um grau no DataJud;
+- comunicações do DJEN de incidentes (`/NN`);
 - processo com muitas partes;
 - execução fiscal;
 - falência ou recuperação judicial;

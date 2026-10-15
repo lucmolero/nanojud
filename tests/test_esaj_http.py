@@ -136,3 +136,34 @@ def test_seguir_lista_sem_links_retorna_resposta_original():
     resultado = esaj._seguir_lista_se_preciso(session, response)
 
     assert resultado is response
+
+
+class SessaoQueNaoDeveSerChamada:
+    def get(self, url, **kwargs):
+        raise AssertionError(f"requisicao inesperada para {url}")
+
+
+def test_pasta_digital_rejeita_href_fora_do_esaj():
+    for href in (
+        "https://example.test/cpopg/abrir.do",
+        "http://esaj.tjsp.jus.br/cpopg/abrir.do",
+        "https://esaj.tjsp.jus.br.example.test/cpopg/abrir.do",
+        "https://esaj.tjsp.jus.br/outro/abrir.do",
+    ):
+        try:
+            esaj.obter_metadados_pasta_documento(SessaoQueNaoDeveSerChamada(), {"href": href})
+        except URLInvalida:
+            continue
+        raise AssertionError(f"href deveria ser rejeitado: {href}")
+
+
+def test_pasta_digital_aceita_href_do_esaj():
+    class Sessao:
+        def get(self, url, **kwargs):
+            return FakeResponse("<html></html>", url)
+
+    href = "https://esaj.tjsp.jus.br/cpopg/abrirDocumentoVinculadoMovimentacao.do?cdDocumento=1"
+
+    resultado = esaj.obter_metadados_pasta_documento(Sessao(), {"href": href})
+
+    assert resultado["status"] == "sem_request_scope"
