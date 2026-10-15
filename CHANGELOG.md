@@ -9,6 +9,9 @@
 
 ### Corrigido
 
+- `partes` classifica corretamente os polos com as abreviaturas do eSAJ (`Imptte`, `Imptdo`, `Apelte`, `Agvte` etc.); antes `polo_ativo` e `polo_passivo` vinham vazios.
+- `relacionados.incidentes` nao traz mais a linha de espacamento vazia da tabela do eSAJ.
+- CLI: `datajud`, `djen`, `extract`, `timeline`, `extrato` e `ler-pecas` passam a imprimir o JSON na tela quando `--out` nao e informado (antes gravavam arquivo no diretorio atual); a saida em UTF-8 evita erro de acentos em consoles Windows.
 - DataJud: consulta todos os graus do numero CNJ (antes `size: 1` pegava um registro arbitrario). O grau mais baixo define os dados principais, `graus` resume cada registro e cada movimento ganha `grau`.
 - DJEN: preserva `numero_processo`, `incidente` (ex.: `/47`), status/cancelamento, `hash`, `numero_comunicacao` e advogados destinatarios.
 - Timeline: ids unicos para movimentos repetidos na mesma data; eventos DataJud trazem `grau` e os do DJEN passam a ter `numero_cnj`.

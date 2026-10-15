@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 from typing import Any, TypeAlias, cast
 
@@ -22,11 +23,24 @@ def _print_result(result: JsonPayload) -> None:
     print(_format_json(result))
 
 
+def _emitir(payload: JsonPayload, out: str | None, rotulo: str) -> None:
+    """Imprime o JSON na tela ou, com --out, grava em arquivo."""
+    if out is None:
+        _print_result(payload)
+        return
+    Path(out).write_text(_format_json(payload), encoding="utf-8")
+    print(f"{rotulo} salvo em: {out}")
+
+
 def _erro_json(exc: Exception) -> str:
     return _format_json({"status": "erro", "erro": exc.__class__.__name__, "mensagem": str(exc)})
 
 
 def main(argv: list[str] | None = None) -> int:
+    # consoles Windows em cp1252 quebram com acentos fora do charset ao imprimir JSON
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(
         prog="nanojud",
         description=(
@@ -40,7 +54,9 @@ def main(argv: list[str] | None = None) -> int:
 
     extrato = sub.add_parser("extrato", help="Gerar extrato completo de processo eSAJ")
     extrato.add_argument("numero", help="Número CNJ do processo")
-    extrato.add_argument("--out", default="extrato.json", help="Arquivo de saída JSON")
+    extrato.add_argument(
+        "--out", default=None, help="Arquivo de saída JSON (sem ele, imprime na tela)"
+    )
     extrato.add_argument(
         "--baixar-pecas",
         action="store_true",
@@ -83,18 +99,24 @@ def main(argv: list[str] | None = None) -> int:
         "--limite", type=int, default=3, help="Limite de pecas; 0 significa sem limite"
     )
     ler_pecas.add_argument("--max-chars", type=int, default=4000, help="Maximo de caracteres")
-    ler_pecas.add_argument("--out", default="pecas_texto.json", help="Arquivo de saida JSON")
+    ler_pecas.add_argument(
+        "--out", default=None, help="Arquivo de saída JSON (sem ele, imprime na tela)"
+    )
 
     datajud_cmd = sub.add_parser("datajud", help="Consultar dados processuais no DataJud/CNJ")
     datajud_cmd.add_argument("numero", help="Número CNJ do processo")
     datajud_cmd.add_argument("--api-key", default=None, help="API key do DataJud/CNJ")
     datajud_cmd.add_argument("--raw", action="store_true", help="Incluir payload bruto")
-    datajud_cmd.add_argument("--out", default="datajud.json", help="Arquivo de saída JSON")
+    datajud_cmd.add_argument(
+        "--out", default=None, help="Arquivo de saída JSON (sem ele, imprime na tela)"
+    )
 
     djen_cmd = sub.add_parser("djen", help="Consultar comunicações DJEN")
     djen_cmd.add_argument("numero", help="Número CNJ do processo")
     djen_cmd.add_argument("--data-inicio", default="", help="Data inicial ISO yyyy-mm-dd")
-    djen_cmd.add_argument("--out", default="djen.json", help="Arquivo de saída JSON")
+    djen_cmd.add_argument(
+        "--out", default=None, help="Arquivo de saída JSON (sem ele, imprime na tela)"
+    )
 
     extract_cmd = sub.add_parser("extract", help="Extrair dados em envelope versionado")
     extract_cmd.add_argument("numero", help="Número CNJ do processo")
@@ -111,7 +133,9 @@ def main(argv: list[str] | None = None) -> int:
     extract_cmd.add_argument(
         "--raw", action="store_true", help="Incluir payload bruto quando disponível"
     )
-    extract_cmd.add_argument("--out", default="extraction.json", help="Arquivo de saída JSON")
+    extract_cmd.add_argument(
+        "--out", default=None, help="Arquivo de saída JSON (sem ele, imprime na tela)"
+    )
 
     timeline_cmd = sub.add_parser("timeline", help="Gerar timeline cronológica de extração")
     timeline_cmd.add_argument("numero", help="Número CNJ do processo")
@@ -134,7 +158,9 @@ def main(argv: list[str] | None = None) -> int:
     timeline_cmd.add_argument(
         "--max-text-chars", type=int, default=0, help="Truncar texto de cada evento"
     )
-    timeline_cmd.add_argument("--out", default="timeline.json", help="Arquivo de saída JSON")
+    timeline_cmd.add_argument(
+        "--out", default=None, help="Arquivo de saída JSON (sem ele, imprime na tela)"
+    )
 
     args = parser.parse_args(argv)
     try:
@@ -151,10 +177,7 @@ def main(argv: list[str] | None = None) -> int:
                 salvar_html=args.salvar_html,
                 limite_movimentacoes=args.limite_movimentacoes or None,
             )
-            Path(args.out).write_text(
-                _format_json(cast(JsonPayload, extrato_resultado)), encoding="utf-8"
-            )
-            print(f"Extrato salvo em: {args.out}")
+            _emitir(cast(JsonPayload, extrato_resultado), args.out, "Extrato")
             return 0
 
         if args.command == "partes":
@@ -179,14 +202,12 @@ def main(argv: list[str] | None = None) -> int:
                 limite=args.limite,
                 max_chars=args.max_chars,
             )
-            Path(args.out).write_text(_format_json(leitura_resultado), encoding="utf-8")
-            print(f"Leitura de pecas salva em: {args.out}")
+            _emitir(leitura_resultado, args.out, "Leitura de peças")
             return 0
 
         if args.command == "djen":
             djen_resultado = api.consultar_djen(args.numero, data_inicio=args.data_inicio)
-            Path(args.out).write_text(_format_json(djen_resultado), encoding="utf-8")
-            print(f"DJEN salvo em: {args.out}")
+            _emitir(djen_resultado, args.out, "DJEN")
             return 0
 
         if args.command == "datajud":
@@ -195,10 +216,7 @@ def main(argv: list[str] | None = None) -> int:
                 api_key=args.api_key,
                 include_raw=args.raw,
             )
-            Path(args.out).write_text(
-                _format_json(cast(JsonPayload, datajud_resultado)), encoding="utf-8"
-            )
-            print(f"DataJud salvo em: {args.out}")
+            _emitir(cast(JsonPayload, datajud_resultado), args.out, "DataJud")
             return 0
 
         if args.command == "extract":
@@ -209,8 +227,7 @@ def main(argv: list[str] | None = None) -> int:
                 datajud_api_key=args.datajud_api_key,
                 djen_data_inicio=args.djen_data_inicio,
             )
-            Path(args.out).write_text(_format_json(cast(JsonPayload, extracao)), encoding="utf-8")
-            print(f"Extração salva em: {args.out}")
+            _emitir(cast(JsonPayload, extracao), args.out, "Extração")
             return 0
 
         if args.command == "timeline":
@@ -232,8 +249,7 @@ def main(argv: list[str] | None = None) -> int:
                 saida: JsonPayload = cast(JsonPayload, extracao)
             else:
                 saida = cast(JsonPayload, timeline_resultado)
-            Path(args.out).write_text(_format_json(saida), encoding="utf-8")
-            print(f"Timeline salva em: {args.out}")
+            _emitir(saida, args.out, "Timeline")
             return 0
 
         parser.print_help()

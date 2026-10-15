@@ -91,3 +91,10 @@ def test_normalizar_fonte_rejeita_desconhecida():
         assert "Fonte desconhecida" in str(exc)
     else:
         raise AssertionError("Fonte desconhecida deveria falhar")
+
+
+def test_classificar_polo_aceita_abreviaturas_do_esaj():
+    assert classificar_polo("Imptte") == "ativo"
+    assert classificar_polo("Imptdo") == "passivo"
+    assert classificar_polo("Apelte ") == "ativo"
+    assert classificar_polo("Interesda.") is None
