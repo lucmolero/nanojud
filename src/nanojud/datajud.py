@@ -20,6 +20,9 @@ from .utils import validar_numero_cnj
 API_TEMPLATE = "https://api-publica.datajud.cnj.jus.br/api_publica_{indice}/_search"
 DATAJUD_WIKI_ACESSO_URL = "https://datajud-wiki.cnj.jus.br/api-publica/acesso/"
 PUBLIC_DATAJUD_API_KEY = "cDZHYzlZa0JadVREZDJCendQbXY6SkJlTzNjLV9TRENyQk1RdnFKZGRQdw=="
+# O DataJud indexa um registro por grau (G1, TR, G2...) para o mesmo numero CNJ.
+MAX_REGISTROS = 10
+ORDEM_GRAUS = ("G1", "JE", "TR", "G2", "SUP")
 DEFAULT_SOURCE_FIELDS = [
     "numeroProcesso",
     "classe",
@@ -125,7 +128,7 @@ def consultar_processo(
     url = API_TEMPLATE.format(indice=indice_resolvido)
     payload: dict[str, Any] = {
         "query": {"match": {"numeroProcesso": somente_digitos(numero)}},
-        "size": 1,
+        "size": MAX_REGISTROS,
         "_source": DEFAULT_SOURCE_FIELDS,
     }
     headers = {
@@ -178,9 +181,12 @@ def consultar_processo(
             **({"raw": body} if include_raw else {}),
         }
 
-    source = hits[0].get("_source") or {}
+    sources = sorted(
+        (hit.get("_source") or {} for hit in hits),
+        key=lambda item: _rank_grau(str(item.get("grau") or "")),
+    )
     return _normalizar_source(
-        source,
+        sources,
         numero=numero,
         indice=indice_resolvido,
         source_url=url,
@@ -189,8 +195,12 @@ def consultar_processo(
     )
 
 
+def _rank_grau(grau: str) -> int:
+    return ORDEM_GRAUS.index(grau) if grau in ORDEM_GRAUS else len(ORDEM_GRAUS)
+
+
 def _normalizar_source(
-    source: dict[str, Any],
+    sources: list[dict[str, Any]],
     *,
     numero: str,
     indice: str,
@@ -198,11 +208,18 @@ def _normalizar_source(
     extracted_at: str,
     raw: dict[str, Any] | None,
 ) -> DataJudExtraction:
+    """Consolida os registros por grau; o primeiro (menor grau) define os dados principais."""
+    source = sources[0]
     classe_raw = source.get("classe")
     orgao_raw = source.get("orgaoJulgador")
     classe = classe_raw if isinstance(classe_raw, dict) else {}
     orgao = orgao_raw if isinstance(orgao_raw, dict) else {}
-    movimentos = [_normalizar_movimento(mov) for mov in source.get("movimentos") or []]
+    movimentos = [
+        {**_normalizar_movimento(mov), "grau": str(item.get("grau") or "")}
+        for item in sources
+        for mov in item.get("movimentos") or []
+    ]
+    movimentos.sort(key=lambda mov: (not mov["data_hora"], mov["data_hora"]))
     partes = [_normalizar_parte(parte) for parte in source.get("partes") or []]
     saida: DataJudExtraction = {
         "status": "ok",
@@ -213,6 +230,7 @@ def _normalizar_source(
         "classe": str(classe.get("nome") or source.get("classe") or ""),
         "orgao_julgador": str(orgao.get("nome") or source.get("orgaoJulgador") or ""),
         "assuntos": list(source.get("assuntos") or []),
+        "graus": [_resumir_grau(item) for item in sources],
         "movimentos": movimentos,
         "partes": partes,
         "metadata": {
@@ -225,6 +243,18 @@ def _normalizar_source(
     if raw is not None:
         saida["raw"] = raw
     return saida
+
+
+def _resumir_grau(item: dict[str, Any]) -> dict[str, Any]:
+    classe = item.get("classe")
+    orgao = item.get("orgaoJulgador")
+    return {
+        "grau": str(item.get("grau") or ""),
+        "classe": str((classe or {}).get("nome") or "") if isinstance(classe, dict) else "",
+        "orgao_julgador": str((orgao or {}).get("nome") or "") if isinstance(orgao, dict) else "",
+        "data_ajuizamento": str(item.get("dataAjuizamento") or ""),
+        "total_movimentos": len(item.get("movimentos") or []),
+    }
 
 
 def _normalizar_movimento(movimento: dict[str, Any]) -> dict[str, Any]:

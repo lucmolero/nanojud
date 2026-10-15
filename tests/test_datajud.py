@@ -172,3 +172,56 @@ def test_consultar_processo_erro_rede():
             session=session,
             retry=1,
         )
+
+
+def _hit(grau, classe, movimentos, ajuizamento="2020-01-01T00:00:00.000Z"):
+    return {
+        "_source": {
+            "numeroProcesso": "10765392020198260100",
+            "tribunal": "TJRJ",
+            "grau": grau,
+            "classe": {"nome": classe},
+            "orgaoJulgador": {"nome": f"Orgao {grau}"},
+            "dataAjuizamento": ajuizamento,
+            "movimentos": movimentos,
+        }
+    }
+
+
+def test_consolida_todos_os_graus_priorizando_o_primeiro_grau():
+    # o DataJud devolve G2 antes de G1; a ordem de chegada nao pode definir o processo
+    corpo = {
+        "hits": {
+            "hits": [
+                _hit(
+                    "G2",
+                    "Apelacao Civel",
+                    [{"codigo": 1, "nome": "Recurso", "dataHora": "2023-03-01T10:00:00.000Z"}],
+                ),
+                _hit(
+                    "G1",
+                    "Usucapiao",
+                    [
+                        {
+                            "codigo": 2,
+                            "nome": "Distribuicao",
+                            "dataHora": "2012-09-10T10:00:00.000Z",
+                        },
+                        {"codigo": 3, "nome": "Sentenca", "dataHora": "2022-01-01T10:00:00.000Z"},
+                    ],
+                ),
+            ]
+        }
+    }
+    session = FakeSession(FakeResponse(200, corpo))
+
+    resultado = datajud.consultar_processo("1076539-20.2019.8.26.0100", session=session)
+
+    assert session.calls[0]["kwargs"]["json"]["size"] == datajud.MAX_REGISTROS
+    assert resultado["grau"] == "G1"
+    assert resultado["classe"] == "Usucapiao"
+    assert [g["grau"] for g in resultado["graus"]] == ["G1", "G2"]
+    assert [g["total_movimentos"] for g in resultado["graus"]] == [2, 1]
+    assert [m["grau"] for m in resultado["movimentos"]] == ["G1", "G1", "G2"]
+    datas = [m["data_hora"] for m in resultado["movimentos"]]
+    assert datas == sorted(datas)

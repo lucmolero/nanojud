@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Corrigido
+
+- DataJud: consulta todos os graus do numero CNJ (antes `size: 1` pegava um registro arbitrario). O grau mais baixo define os dados principais, `graus` resume cada registro e cada movimento ganha `grau`.
+- DJEN: preserva `numero_processo`, `incidente` (ex.: `/47`), status/cancelamento, `hash`, `numero_comunicacao` e advogados destinatarios.
+- Timeline: ids unicos para movimentos repetidos na mesma data; eventos DataJud trazem `grau` e os do DJEN passam a ter `numero_cnj`.
+
 ### Adicionado
 
 - Adiciona guia dedicado de distribuicao PyPI e MCP.
