@@ -49,6 +49,9 @@ def extract_process(
                 timeout=timeout,
             )
             data[ESAJ] = esaj_extrato
+            aviso_movimentacoes = (esaj_extrato.get("origem") or {}).get("aviso_movimentacoes")
+            if aviso_movimentacoes:
+                warnings.append(f"eSAJ: {aviso_movimentacoes}")
             source_status[ESAJ] = {
                 "status": "ok",
                 "records": len(esaj_extrato.get("movimentacoes") or []),

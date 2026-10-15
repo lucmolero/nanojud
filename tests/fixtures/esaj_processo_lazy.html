@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="pt-BR">
+  <body>
+    <div id="containerDadosPrincipaisProcesso">
+      <span id="numeroProcesso">1076539-20.2019.8.26.0100</span>
+      <span id="classeProcesso">Procedimento Comum Cível</span>
+      <div id="assuntoProcesso">Meio Ambiente</div>
+      <div id="foroProcesso">Foro Central Cível</div>
+      <div id="varaProcesso">2ª Vara Cível</div>
+    </div>
+    <div id="containerExibirMovimentacoes" style="padding: 8px 0;">
+      <a href="javascript:" id="btnExibirMovimentacoes">Exibir movimentações</a>
+    </div>
+    <div id="containerMovimentacoes"></div>
+    <script>
+      $.saj.movimentacoes = {
+        codigoProcesso: 'ABC123',
+        labelBotaoExibir: 'Exibir movimentações'
+      };
+    </script>
+  </body>
+</html>

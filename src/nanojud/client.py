@@ -101,7 +101,8 @@ class NanoJudClient:
     ) -> Extrato:
         cache_key = (
             f"{numero}|baixar={baixar_pecas}|limite={limite_pecas}|"
-            f"inspecionar={inspecionar_pecas}|limite_inspecao={limite_inspecao_pecas}"
+            f"inspecionar={inspecionar_pecas}|limite_inspecao={limite_inspecao_pecas}|"
+            f"limite_mov={self.config.limite_movimentacoes}"
         )
         if self.cache and not baixar_pecas:
             cached = self.cache.get("extrato", cache_key)
@@ -118,6 +119,8 @@ class NanoJudClient:
             salvar_html=self.config.salvar_html if salvar_html is None else salvar_html,
             session=self.session,
             timeout=self.config.timeout,
+            limite_movimentacoes=self.config.limite_movimentacoes,
+            pausa_paginas=self.config.pausa_paginas,
         )
         if self.cache and not baixar_pecas:
             self.cache.set("extrato", cache_key, extrato)

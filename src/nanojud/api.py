@@ -26,6 +26,7 @@ def get_extrato(
     inspecionar_pecas: bool = False,
     limite_inspecao_pecas: int = 10,
     salvar_html: bool = False,
+    limite_movimentacoes: int | None = esaj.LIMITE_MOVIMENTACOES,
 ) -> Extrato:
     """Monta extrato estruturado do processo eSAJ/TJSP."""
     return esaj.montar_extrato(
@@ -35,6 +36,7 @@ def get_extrato(
         inspecionar_pecas=inspecionar_pecas,
         limite_inspecao_pecas=limite_inspecao_pecas,
         salvar_html=salvar_html,
+        limite_movimentacoes=limite_movimentacoes,
     )
 
 
