@@ -212,3 +212,24 @@ def test_classificar_documento_e_titulo_por_query():
     assert esaj.classificar_documento("outro") == "outro"
     assert esaj.extrair_cd_documento(link, link["href"]) == "999"
     assert esaj.titulo_documento(link, link["href"]) == "Decisão"
+
+
+def test_incidentes_ignora_linha_de_espacamento_vazia():
+    html = """
+    <h2>Incidentes</h2>
+    <table>
+      <tr><td></td><td></td></tr>
+      <tr>
+        <td>12/12/2018</td>
+        <td>
+          <a class="incidente" href="/cpopg/show.do?processo.codigo=INC">
+            Requisição de Pequeno Valor
+          </a>
+        </td>
+      </tr>
+    </table>
+    """
+
+    incidentes = esaj.extrair_relacionados(BeautifulSoup(html, "html.parser"))["incidentes"]
+
+    assert [i["classe"] for i in incidentes] == ["Requisição de Pequeno Valor"]
