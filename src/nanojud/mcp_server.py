@@ -67,9 +67,17 @@ def create_server() -> Any:
         return {"count": len(numeros), "numeros": numeros}
 
     @server.tool()
-    def consultar_esaj(numero: str, salvar_html: bool = False) -> dict[str, Any]:
-        """Consulta extrato publico do eSAJ/TJSP."""
-        return dict(api.get_extrato(numero, salvar_html=salvar_html))
+    def consultar_esaj(
+        numero: str, salvar_html: bool = False, limite_movimentacoes: int = 100
+    ) -> dict[str, Any]:
+        """Consulta extrato publico do eSAJ/TJSP (limite_movimentacoes=0 busca todas)."""
+        return dict(
+            api.get_extrato(
+                numero,
+                salvar_html=salvar_html,
+                limite_movimentacoes=limite_movimentacoes or None,
+            )
+        )
 
     @server.tool()
     def consultar_datajud(

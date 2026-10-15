@@ -55,6 +55,12 @@ def main(argv: list[str] | None = None) -> int:
         "--limite-pecas", type=int, default=3, help="Número máximo de peças para baixar"
     )
     extrato.add_argument("--salvar-html", action="store_true", help="Salvar HTML bruto consultado")
+    extrato.add_argument(
+        "--limite-movimentacoes",
+        type=int,
+        default=100,
+        help="Máximo de movimentações do eSAJ (0 busca todas; 5 por requisição)",
+    )
 
     partes = sub.add_parser("partes", help="Listar partes do processo")
     partes.add_argument("numero", help="Número CNJ do processo")
@@ -143,6 +149,7 @@ def main(argv: list[str] | None = None) -> int:
                 limite_pecas=args.limite_pecas,
                 inspecionar_pecas=args.inspecionar_pecas,
                 salvar_html=args.salvar_html,
+                limite_movimentacoes=args.limite_movimentacoes or None,
             )
             Path(args.out).write_text(
                 _format_json(cast(JsonPayload, extrato_resultado)), encoding="utf-8"
