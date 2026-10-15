@@ -235,3 +235,15 @@ def test_exportadores_vazios():
     assert csv_path.read_text(encoding="utf-8").strip() == ""
     with sqlite3.connect(db_path) as conn:
         assert conn.execute("select count(*) from records").fetchone()[0] == 0
+
+
+def test_timeline_gera_ids_unicos_para_movimentos_repetidos():
+    from nanojud.timeline import build_timeline
+
+    repetido = {"codigo": "581", "nome": "Documento", "data": "2020-06-01", "grau": "G1"}
+    extracao = {"numero_cnj": "1076539-20.2019.8.26.0100", "movimentos": [repetido, dict(repetido)]}
+
+    registros = build_timeline(datajud_extracao=extracao)
+
+    assert len({r["id"] for r in registros}) == 2
+    assert registros[0]["grau"] == "G1"

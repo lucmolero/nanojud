@@ -44,6 +44,7 @@ class TimelineRecord(TypedDict, total=False):
     titulo: str
     texto: str
     texto_truncado: bool
+    grau: str
     documentos: list[dict[str, Any]]
     payload_origem: dict[str, Any]
 
@@ -56,6 +57,7 @@ class DataJudExtraction(TypedDict, total=False):
     grau: str
     classe: str
     orgao_julgador: str
+    graus: list[dict[str, Any]]
     assuntos: list[dict[str, Any]]
     movimentos: list[dict[str, Any]]
     partes: list[dict[str, Any]]
