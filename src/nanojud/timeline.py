@@ -44,6 +44,15 @@ def _garantir_ids_unicos(registros: list[TimelineRecord]) -> None:
             registro["id"] = hashlib.sha1(f"{base}|{n}".encode()).hexdigest()
 
 
+def limite_movimentacoes_para(limit: int, recent_first: bool, padrao: int | None) -> int | None:
+    """Quantas movimentações do eSAJ buscar para entregar ``limit`` eventos mais recentes.
+
+    O eSAJ lista do mais novo para o mais antigo; para os N eventos mais recentes da timeline
+    unificada bastam as N mais recentes do eSAJ.
+    """
+    return max(limit, 5) if recent_first and limit > 0 else padrao
+
+
 def compactar_timeline(
     registros: list[TimelineRecord],
     *,

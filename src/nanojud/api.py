@@ -14,7 +14,7 @@ from .normalization import normalizar_data
 
 def search_processo(numero: str) -> ResumoProcesso:
     """Consulta um processo e retorna um resumo objetivo."""
-    extrato = get_extrato(numero)
+    extrato = get_extrato(numero, limite_movimentacoes=esaj.LIMITE_RESUMO)
     return _resumo_do_extrato(extrato)
 
 
@@ -27,6 +27,7 @@ def get_extrato(
     limite_inspecao_pecas: int = 10,
     salvar_html: bool = False,
     limite_movimentacoes: int | None = esaj.LIMITE_MOVIMENTACOES,
+    desde: str = "",
 ) -> Extrato:
     """Monta extrato estruturado do processo eSAJ/TJSP."""
     return esaj.montar_extrato(
@@ -37,6 +38,7 @@ def get_extrato(
         limite_inspecao_pecas=limite_inspecao_pecas,
         salvar_html=salvar_html,
         limite_movimentacoes=limite_movimentacoes,
+        desde=desde,
     )
 
 
@@ -99,7 +101,7 @@ def ler_pecas(
 
 def resumo_rapido(numero: str) -> str:
     """Gera um resumo textual curto para briefing, e-mail ou triagem."""
-    extrato = get_extrato(numero)
+    extrato = get_extrato(numero, limite_movimentacoes=esaj.LIMITE_RESUMO)
     info = _resumo_do_extrato(extrato)
     partes = extrato.get("partes", {})
     ativo = _nomes_polo(partes.get("polo_ativo", []))
@@ -136,6 +138,9 @@ def extract_process(
     include_raw: bool = False,
     datajud_api_key: str | None = None,
     djen_data_inicio: str = "",
+    limite_movimentacoes: int | None = esaj.LIMITE_MOVIMENTACOES,
+    desde: str = "",
+    prazo_total: float | None = extraction.PRAZO_TOTAL,
 ) -> dict[str, Any]:
     """Extrai dados das fontes solicitadas em envelope versionado."""
     return cast(
@@ -146,6 +151,9 @@ def extract_process(
             include_raw=include_raw,
             datajud_api_key=datajud_api_key,
             djen_data_inicio=djen_data_inicio,
+            limite_movimentacoes=limite_movimentacoes,
+            desde=desde,
+            prazo_total=prazo_total,
         ),
     )
 

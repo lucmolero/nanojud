@@ -86,7 +86,7 @@ class NanoJudClient:
         )
 
     def search_processo(self, numero: str) -> ResumoProcesso:
-        extrato = self.get_extrato(numero)
+        extrato = self.get_extrato(numero, limite_movimentacoes=esaj.LIMITE_RESUMO)
         return _resumo_do_extrato(extrato)
 
     def get_extrato(
@@ -98,11 +98,16 @@ class NanoJudClient:
         inspecionar_pecas: bool = False,
         limite_inspecao_pecas: int = 10,
         salvar_html: bool | None = None,
+        limite_movimentacoes: int | None = -1,
+        desde: str = "",
     ) -> Extrato:
+        """``limite_movimentacoes=-1`` usa o valor de ``NanoJudConfig``; ``None`` busca todas."""
+        if limite_movimentacoes == -1:
+            limite_movimentacoes = self.config.limite_movimentacoes
         cache_key = (
             f"{numero}|baixar={baixar_pecas}|limite={limite_pecas}|"
             f"inspecionar={inspecionar_pecas}|limite_inspecao={limite_inspecao_pecas}|"
-            f"limite_mov={self.config.limite_movimentacoes}"
+            f"limite_mov={limite_movimentacoes}|desde={desde}"
         )
         if self.cache and not baixar_pecas:
             cached = self.cache.get("extrato", cache_key)
@@ -119,8 +124,9 @@ class NanoJudClient:
             salvar_html=self.config.salvar_html if salvar_html is None else salvar_html,
             session=self.session,
             timeout=self.config.timeout,
-            limite_movimentacoes=self.config.limite_movimentacoes,
+            limite_movimentacoes=limite_movimentacoes,
             pausa_paginas=self.config.pausa_paginas,
+            desde=desde,
         )
         if self.cache and not baixar_pecas:
             self.cache.set("extrato", cache_key, extrato)
@@ -184,6 +190,8 @@ class NanoJudClient:
         sources: list[str] | tuple[str, ...] = ("esaj", "datajud", "djen"),
         include_raw: bool = False,
         djen_data_inicio: str = "",
+        desde: str = "",
+        prazo_total: float | None = extraction.PRAZO_TOTAL,
     ) -> dict[str, Any]:
         return cast(
             dict[str, Any],
@@ -195,6 +203,9 @@ class NanoJudClient:
                 djen_data_inicio=djen_data_inicio,
                 session=self.session,
                 timeout=self.config.timeout,
+                limite_movimentacoes=self.config.limite_movimentacoes,
+                desde=desde,
+                prazo_total=prazo_total,
             ),
         )
 

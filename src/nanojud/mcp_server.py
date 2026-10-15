@@ -5,9 +5,9 @@ from __future__ import annotations
 import importlib
 from typing import Any, cast
 
-from . import api, normalization
+from . import api, compactacao, normalization
 from .sources import ALL_SOURCES, SourceName, normalizar_fonte
-from .timeline import compactar_timeline
+from .timeline import compactar_timeline, limite_movimentacoes_para
 from .utils import validar_numero_cnj
 from .version import __version__
 
@@ -68,16 +68,24 @@ def create_server() -> Any:
 
     @server.tool()
     def consultar_esaj(
-        numero: str, salvar_html: bool = False, limite_movimentacoes: int = 100
+        numero: str,
+        salvar_html: bool = False,
+        limite_movimentacoes: int = 100,
+        desde: str = "",
+        compacto: bool = True,
     ) -> dict[str, Any]:
-        """Consulta extrato publico do eSAJ/TJSP (limite_movimentacoes=0 busca todas)."""
-        return dict(
+        """Extrato publico do eSAJ/TJSP. limite_movimentacoes=0 busca todas; desde=YYYY-MM-DD
+        traz so movimentos a partir da data; compacto=True omite texto repetido e documentos
+        por movimentacao (a lista de documentos continua em `documentos`)."""
+        extrato = dict(
             api.get_extrato(
                 numero,
                 salvar_html=salvar_html,
                 limite_movimentacoes=limite_movimentacoes or None,
+                desde=desde,
             )
         )
+        return compactacao.compactar_extrato(extrato) if compacto else extrato
 
     @server.tool()
     def consultar_datajud(
@@ -101,15 +109,20 @@ def create_server() -> Any:
         include_raw: bool = False,
         datajud_api_key: str | None = None,
         djen_data_inicio: str = "",
+        desde: str = "",
+        compacto: bool = True,
     ) -> dict[str, Any]:
-        """Extrai dados das fontes solicitadas em envelope versionado."""
-        return api.extract_process(
+        """Envelope versionado por fonte. compacto=True mantem so a timeline unificada (sem
+        repetir movimentacoes e comunicacoes em `data`); desde=YYYY-MM-DD restringe a data."""
+        envelope = api.extract_process(
             numero,
             sources=_normalizar_sources(sources),
             include_raw=include_raw,
             datajud_api_key=datajud_api_key,
             djen_data_inicio=djen_data_inicio,
+            desde=desde,
         )
+        return compactacao.compactar_envelope(envelope) if compacto else envelope
 
     @server.tool()
     def gerar_timeline(
@@ -121,14 +134,18 @@ def create_server() -> Any:
         recent_first: bool = False,
         include_text: bool = True,
         max_text_chars: int = 0,
+        desde: str = "",
     ) -> dict[str, Any]:
-        """Gera timeline cronologica de registros extraidos, sem interpretacao juridica."""
+        """Timeline cronologica sem interpretacao juridica. Com recent_first=True e limit,
+        busca so o necessario no eSAJ; desde=YYYY-MM-DD restringe a data."""
         envelope = api.extract_process(
             numero,
             sources=_normalizar_sources(sources),
             include_raw=False,
             datajud_api_key=datajud_api_key,
             djen_data_inicio=djen_data_inicio,
+            desde=desde,
+            limite_movimentacoes=limite_movimentacoes_para(limit, recent_first, 100),
         )
         timeline = compactar_timeline(
             envelope.get("timeline", []),

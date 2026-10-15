@@ -29,8 +29,8 @@ Retorna `ResumoProcesso`:
 Retorna `Extrato` com:
 
 - `origem`: fonte, tribunal, URL final e data da coleta, além de `movimentacoes_completas` e `aviso_movimentacoes` (corte por limite ou falha parcial na paginação).
-- `dados_basicos`: número, classe, assunto, foro, vara, juiz e campos auxiliares.
-- `partes`: partes principais, todas as partes e polos classificados.
+- `dados_basicos`: número, classe, assunto, foro, vara, juiz, `situacao` (ex.: Extinto), `etiquetas` do cabeçalho e campos auxiliares.
+- `partes`: partes principais, todas as partes (repete as principais quando o eSAJ não traz a tabela completa) e polos classificados.
 - `movimentacoes`: data, título, teor, metadados e documentos vinculados.
 - `documentos`: candidatos públicos e restritos por senha.
 - `peticoes_diversas`, `audiencias`, `relacionados`: tabelas complementares quando presentes.

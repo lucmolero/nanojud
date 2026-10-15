@@ -53,6 +53,12 @@ Cada registro preserva:
 - `documentos`;
 - `payload_origem`, quando `include_raw=True`.
 
+## Fontes em paralelo e prazo total
+
+`extract_process` consulta eSAJ, DataJud e DJEN ao mesmo tempo. `prazo_total` (padrão 60 s) limita a espera: uma fonte que estoura o prazo vira erro isolado em `errors` e `source_status`, e as demais voltam normalmente. Fora do TJSP, o eSAJ aparece como `nao_aplicavel`, sem erro.
+
+`desde` (AAAA-MM-DD) restringe movimentações e comunicações e reduz a paginação do eSAJ.
+
 ## DataJud com mais de um grau
 
 O DataJud guarda um registro por grau (G1, TR, G2...) para o mesmo número CNJ. O resultado consolida todos: o menor grau define `classe`, `orgao_julgador` e `grau`; `graus` resume cada registro (classe, órgão, data de ajuizamento e total de movimentos); e cada movimento traz o `grau` de origem.

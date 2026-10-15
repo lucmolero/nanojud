@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+### Corrigido
+
+- eSAJ: consultas em sequencia muito rapida recebiam o aviso de "multiplas consultas simultaneas" no lugar do processo e eram reportadas como processo nao encontrado. Agora a pagina e tentada de novo apos uma pausa e, se o bloqueio persistir, o erro e de indisponibilidade com mensagem clara.
+- `partes.todas` vinha vazio em processos que so trazem a tabela de partes principais; passa a repetir as principais.
+- eSAJ: `dados_basicos` ganha `situacao` (ex.: Extinto) e `etiquetas` do cabecalho do processo.
+- `search` busca so uma pagina de movimentacoes (de ~11 s para ~1 s no processo de demonstracao).
+
+### Adicionado
+
+- `desde` (YYYY-MM-DD) em `api.get_extrato`, `api.extract_process`, CLI (`extract`, `timeline`) e MCP: restringe movimentacoes e comunicacoes e interrompe a paginacao do eSAJ ao chegar em dados mais antigos.
+- `timeline --recent-first --limit N` (e `gerar_timeline` no MCP) busca no eSAJ so as N movimentacoes mais recentes.
+- `extract_process` consulta as fontes em paralelo e aceita `prazo_total` (padrao 60 s): uma fonte lenta vira erro isolado e as demais voltam. O eSAJ fora do TJSP e marcado `nao_aplicavel` em vez de erro.
+- CLI `--limite-movimentacoes` em `extract` e `timeline`.
+- MCP: `consultar_esaj` e `extrair_processo` aceitam `compacto` (padrao `true`), que remove dados repetidos (movimentacoes duplicadas entre `data` e `timeline`, texto repetido); `compacto=false` devolve tudo.
+
 ## [0.5.1] - 2026-10-15
 
 ### Seguranca
