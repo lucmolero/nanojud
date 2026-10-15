@@ -10,16 +10,6 @@
 - A saida de `ler_pecas` traz `pasta_digital` resumida (`status` e `paginas`), sem a URL com ticket.
 - "Processo nao encontrado" do eSAJ passa a dizer que pode ser processo sigiloso, de outro sistema ou numero inexistente.
 - `normalizar_oab` devolve a forma canonica `NUMERO/UF` (`140969/SP`, suplementar `12345A/RJ`); antes `OAB/SP 140.969` virava `/SP 140.969`.
-
-### Adicionado
-
-- Ritmo minimo de 1,1 s entre consultas de processo ao eSAJ, valendo para todo o processo Python (o eSAJ recusa intervalos menores por IP). Um lote de 4 processos passou de ~13 s para ~6 s, sem consultas perdidas.
-- `search` (API, cliente e CLI) funciona fora do TJSP usando o DataJud (sem partes, foro e juiz; `fonte: datajud`).
-- `NanoJudClient.search_processo` reaproveita o extrato ja buscado pelo mesmo cliente, sem repetir a consulta ao eSAJ.
-- CLI `djen --desde` (mesmo que `--data-inicio`).
-
-### Corrigido
-
 - eSAJ: consultas em sequencia muito rapida recebiam o aviso de "multiplas consultas simultaneas" no lugar do processo e eram reportadas como processo nao encontrado. Agora a pagina e tentada de novo apos uma pausa e, se o bloqueio persistir, o erro e de indisponibilidade com mensagem clara.
 - `partes.todas` vinha vazio em processos que so trazem a tabela de partes principais; passa a repetir as principais.
 - eSAJ: `dados_basicos` ganha `situacao` (ex.: Extinto) e `etiquetas` do cabecalho do processo.
@@ -27,6 +17,10 @@
 
 ### Adicionado
 
+- Ritmo minimo de 1,1 s entre consultas de processo ao eSAJ, valendo para todo o processo Python (o eSAJ recusa intervalos menores por IP). Um lote de 4 processos passou de ~13 s para ~6 s, sem consultas perdidas.
+- `search` (API, cliente e CLI) funciona fora do TJSP usando o DataJud (sem partes, foro e juiz; `fonte: datajud`).
+- `NanoJudClient.search_processo` reaproveita o extrato ja buscado pelo mesmo cliente, sem repetir a consulta ao eSAJ.
+- CLI `djen --desde` (mesmo que `--data-inicio`).
 - `desde` (YYYY-MM-DD) em `api.get_extrato`, `api.extract_process`, CLI (`extract`, `timeline`) e MCP: restringe movimentacoes e comunicacoes e interrompe a paginacao do eSAJ ao chegar em dados mais antigos.
 - `timeline --recent-first --limit N` (e `gerar_timeline` no MCP) busca no eSAJ so as N movimentacoes mais recentes.
 - `extract_process` consulta as fontes em paralelo e aceita `prazo_total` (padrao 60 s): uma fonte lenta vira erro isolado e as demais voltam. O eSAJ fora do TJSP e marcado `nao_aplicavel` em vez de erro.
