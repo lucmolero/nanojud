@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.5.3] - 2026-10-15
+
 ### Adicionado
 
 - CLI em portugues: ajuda, mensagens de uso e de erro em portugues; apelidos `consultar` (search), `linha-do-tempo` (timeline) e `extrair` (extract); opcoes `--fonte`, `--limite`, `--recentes-primeiro`, `--max-caracteres`, `--ajuda` e `--versao`. Os nomes em ingles continuam valendo.
