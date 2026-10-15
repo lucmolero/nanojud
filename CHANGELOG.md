@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-10-15
+
 ### Seguranca
 
 - eSAJ: o `href` de documentos lido de um extrato JSON externo (`baixar`, `ler-pecas`, inspecao de pecas) agora precisa ser `https://esaj.tjsp.jus.br/cpopg/` ou `/pastadigital/`; antes qualquer URL era requisitada.
