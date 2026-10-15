@@ -1,8 +1,8 @@
 cff-version: 1.2.0
 message: "Se este projeto ajudar sua pesquisa, produto ou rotina jurídica, cite o repositório."
 title: "nanojud"
-version: "0.5.0"
-date-released: "2026-07-31"
+version: "0.5.1"
+date-released: "2026-10-15"
 abstract: "Biblioteca Python e CLI para extrair, normalizar e exportar dados públicos judiciais do eSAJ/TJSP, DataJud/CNJ e DJEN."
 authors:
   - family-names: "Molero"
