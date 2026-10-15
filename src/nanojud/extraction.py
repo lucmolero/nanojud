@@ -19,14 +19,10 @@ from .schemas import (
 )
 from .sources import ALL_SOURCES, DATAJUD, DJEN, ESAJ, normalizar_fonte
 from .timeline import build_timeline
-from .utils import validar_numero_cnj
+from .utils import eh_tjsp, validar_numero_cnj
 from .version import __version__
 
 PRAZO_TOTAL = 60.0
-
-
-def _eh_tjsp(numero_cnj: str) -> bool:
-    return numero_cnj.split(".")[-3:-1] == ["8", "26"]
 
 
 def extract_process(
@@ -113,7 +109,7 @@ def extract_process(
     tarefas = {ESAJ: _esaj, DATAJUD: _datajud, DJEN: _djen}
     selecionadas = {}
     for fonte in fontes:
-        if fonte == ESAJ and not _eh_tjsp(numero_cnj):
+        if fonte == ESAJ and not eh_tjsp(numero_cnj):
             source_status[ESAJ] = {"status": "nao_aplicavel", "message": "eSAJ cobre só o TJSP."}
         else:
             selecionadas[fonte] = tarefas[fonte]

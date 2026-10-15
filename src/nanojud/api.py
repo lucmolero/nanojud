@@ -10,11 +10,18 @@ from .client import NanoJudClient
 from .config import NanoJudConfig
 from .models import Extrato, Movimentacao, ResumoProcesso
 from .normalization import normalizar_data
+from .utils import eh_tjsp, validar_numero_cnj
 
 
 def search_processo(numero: str) -> ResumoProcesso:
-    """Consulta um processo e retorna um resumo objetivo."""
-    extrato = get_extrato(numero, limite_movimentacoes=esaj.LIMITE_RESUMO)
+    """Consulta um processo e retorna um resumo objetivo.
+
+    No TJSP usa o eSAJ; nos demais tribunais, o DataJud (sem partes, foro nem juiz).
+    """
+    numero_cnj = validar_numero_cnj(numero, segmento=None, tribunal=None)
+    if not eh_tjsp(numero_cnj):
+        return datajud.resumo_do_datajud(consultar_datajud(numero_cnj))
+    extrato = get_extrato(numero_cnj, limite_movimentacoes=esaj.LIMITE_RESUMO)
     return _resumo_do_extrato(extrato)
 
 
@@ -78,6 +85,7 @@ def baixar_pecas(
     else:
         movimentos = extrato.get("movimentacoes", [])
     session = esaj.criar_session()
+    _preparar_documentos(session, extrato, movimentos, limite)
     return esaj.baixar_pecas_publicas(
         session,
         movimentos,
@@ -96,7 +104,18 @@ def ler_pecas(
     documentos = extrato.get("documentos", {}).get("publicos_candidatos_unicos", [])
     movimentos = [{"documentos": documentos}] if documentos else extrato.get("movimentacoes", [])
     session = esaj.criar_session()
+    _preparar_documentos(session, extrato, movimentos, limite)
     return esaj.ler_pecas_publicas(session, movimentos, limite=limite, max_chars=max_chars)
+
+
+def _preparar_documentos(
+    session: Any, extrato: dict[str, Any], movimentos: list[dict[str, Any]], limite: int
+) -> None:
+    numero = (extrato.get("dados_basicos") or {}).get("numero") or (
+        extrato.get("origem") or {}
+    ).get("entrada", "")
+    if numero:
+        esaj.preparar_documentos(session, numero, movimentos, limite)
 
 
 def resumo_rapido(numero: str) -> str:
