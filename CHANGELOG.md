@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+### Adicionado
+
+- CLI em portugues: ajuda, mensagens de uso e de erro em portugues; apelidos `consultar` (search), `linha-do-tempo` (timeline) e `extrair` (extract); opcoes `--fonte`, `--limite`, `--recentes-primeiro`, `--max-caracteres`, `--ajuda` e `--versao`. Os nomes em ingles continuam valendo.
+- Saida em texto legivel no terminal (`--formato auto|texto|json` em `consultar`, `partes`, `linha-do-tempo` e `djen`), com datas em dia/mes/ano. Ao redirecionar a saida ou usar `--out`, continua JSON.
+- `--out` tambem em `consultar` e `partes`.
+- Avisos de andamento no terminal durante consultas demoradas (no stderr, so quando ha terminal).
+- Erros com "O que fazer": texto no terminal e campo `dica` no JSON; mensagens claras para arquivo de extrato ausente ou invalido; Ctrl+C encerra com mensagem.
+- `python -m nanojud` e `situacao` no resumo do `search`.
+- Novo `docs/guia-do-advogado.md`, com instalacao do Python no Windows, tarefas do dia a dia, como ler o resultado, solucao de problemas e glossario; README, quickstart, guia da CLI e pagina para advogados reorganizados para comecar pelo terminal.
+
+### Alterado
+
+- A linha do tempo `--recentes-primeiro --limite N` nao avisa mais do corte de movimentacoes que a propria CLI escolhe.
+
 ## [0.5.2] - 2026-10-15
 
 ### Corrigido

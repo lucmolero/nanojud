@@ -1,22 +1,67 @@
 # CLI
 
-A CLI `nanojud` foi criada para consultas rápidas e geração de arquivos JSON sem escrever código Python.
+A CLI `nanojud` consulta processos pelo terminal, em português, sem escrever código. Se você nunca usou terminal, comece pelo [Guia do advogado](guia-do-advogado.md).
 
-## Ajuda
-
-```bash
-nanojud --help
-```
-
-## Buscar resumo
+## Ajuda e versão
 
 ```bash
-nanojud search 0015020-23.2010.8.26.0053
+nanojud --ajuda
+nanojud consultar --ajuda
+nanojud --versao
 ```
 
-Imprime um JSON resumido com dados básicos e última movimentação encontrada. Fora do TJSP o resumo vem do DataJud (`fonte: datajud`), sem partes, foro nem juiz.
+A ajuda lista os comandos, tem exemplos e explica cada opção. `python -m nanojud ...` funciona no lugar de `nanojud ...`.
 
-## Gerar extrato
+## Comandos e apelidos
+
+Os nomes em inglês continuam valendo; os apelidos em português fazem o mesmo.
+
+| Comando | Apelido | O que faz |
+| ------- | ------- | --------- |
+| `search` | `consultar` | Resumo do processo: classe, vara, situação e última movimentação |
+| `partes` | | Partes e advogados por polo |
+| `timeline` | `linha-do-tempo` | Andamentos de todas as fontes em ordem cronológica |
+| `djen` | | Intimações e publicações do DJEN |
+| `datajud` | | Dados do processo no DataJud (qualquer tribunal) |
+| `extrato` | | Extrato completo do eSAJ em JSON |
+| `extract` | `extrair` | Todas as fontes em um envelope JSON |
+| `ler-pecas` | | Texto de peças públicas, sem salvar PDF |
+| `baixar` | | PDFs de peças públicas |
+
+Opções da linha do tempo com nome em português: `--fonte` (`--source`), `--limite` (`--limit`), `--recentes-primeiro` (`--recent-first`), `--max-caracteres` (`--max-text-chars`).
+
+## Formato de saída: texto ou JSON
+
+`consultar`, `partes`, `linha-do-tempo` e `djen` aceitam `--formato`:
+
+- `texto`: leitura no terminal, com datas em dia/mês/ano.
+- `json`: todos os campos, para planilhas, sistemas e IA.
+- `auto` (padrão): texto quando a saída é o terminal, JSON quando é redirecionada (`> arquivo`, `|`) ou quando você usa `--out`.
+
+Os demais comandos sempre geram JSON. Qualquer comando aceita `--out ARQUIVO` para gravar o resultado e informar o caminho.
+
+## Andamento e erros
+
+Em terminal, os comandos avisam no `stderr` o que estão consultando (por exemplo, "Consultando eSAJ, DataJud e DJEN em paralelo... (até 1 minuto)"), porque algumas consultas levam vários segundos. Esse aviso não aparece quando a saída é redirecionada.
+
+Erros previstos retornam código `2`. No terminal vêm em texto, com **o que fazer**:
+
+```text
+Erro: Número CNJ deve ter 20 dígitos.
+O que fazer: Confira o número do processo. O padrão CNJ tem 20 dígitos, por exemplo 0015020-23.2010.8.26.0053.
+```
+
+Com a saída redirecionada, o erro é um JSON com `status`, `erro`, `mensagem` e `dica`. Ctrl+C interrompe a consulta (código `130`).
+
+## Resumo do processo
+
+```bash
+nanojud consultar 0015020-23.2010.8.26.0053
+```
+
+Mostra classe, assunto, situação, foro, vara, juiz e a última movimentação. Fora do TJSP o resumo vem do DataJud (`fonte: datajud`), sem partes, foro nem juiz.
+
+## Extrato completo
 
 ```bash
 nanojud extrato 0015020-23.2010.8.26.0053 --out extrato.json
@@ -37,13 +82,13 @@ Flags úteis:
 ## Novidades desde uma data e timeline dos eventos recentes
 
 ```bash
-nanojud timeline 0015020-23.2010.8.26.0053 --desde 2026-08-01
-nanojud timeline 0015020-23.2010.8.26.0053 --recent-first --limit 20
+nanojud linha-do-tempo 0015020-23.2010.8.26.0053 --desde 2026-08-01
+nanojud linha-do-tempo 0015020-23.2010.8.26.0053 --recentes-primeiro --limite 20
 nanojud extract 0015020-23.2010.8.26.0053 --limite-movimentacoes 0
 ```
 
 - `--desde AAAA-MM-DD`: só movimentações e comunicações a partir da data; a paginação do eSAJ para ao chegar em dados mais antigos.
-- `--recent-first --limit N`: busca no eSAJ só as N movimentações mais recentes, o que é bem mais rápido que a timeline completa.
+- `--recentes-primeiro --limite N`: busca no eSAJ só as N movimentações mais recentes, o que é bem mais rápido que a timeline completa.
 - `--limite-movimentacoes`: máximo de movimentações do eSAJ (`0` busca todas; padrão 100).
 
 ## Listar partes
@@ -110,11 +155,7 @@ Usa um extrato já gerado para tentar baixar documentos públicos candidatos.
 nanojud ler-pecas extrato.json --limite 3 --max-chars 4000 --out pecas_texto.json
 ```
 
-Lê documentos públicos candidatos em memória. A ferramenta não grava PDFs em disco; quando o conteúdo é PDF público, extrai texto com `pypdf` se o parser estiver instalado. Documentos restritos por senha, captcha ou sigilo não são acessados.
-
-## Erros
-
-Erros previstos são impressos em JSON e retornam código `2`.
+Lê documentos públicos candidatos em memória. A ferramenta reabre o processo na sessão e carrega as movimentações até o documento, o que leva cerca de 10 segundos. Ela não grava PDFs em disco; quando o conteúdo é PDF público, extrai texto com `pypdf` se o parser estiver instalado. Documentos restritos por senha, captcha ou sigilo não são acessados.
 
 ## Boas práticas
 

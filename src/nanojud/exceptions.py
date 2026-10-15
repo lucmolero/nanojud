@@ -29,5 +29,9 @@ class CredencialAusente(NanoJudError):
     """Credencial necessária para uma fonte pública não foi informada."""
 
 
+class ArquivoInvalido(NanoJudError):
+    """Arquivo de entrada ausente, ilegível ou fora do formato esperado."""
+
+
 class DownloadIndisponivel(NanoJudError):
     """Não foi possível baixar a peça pública solicitada."""

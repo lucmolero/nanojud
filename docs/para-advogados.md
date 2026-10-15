@@ -1,5 +1,7 @@
 # Para Advogados
 
+> **Quer começar agora?** O [Guia do advogado](guia-do-advogado.md) leva da instalação à primeira consulta, sem precisar programar.
+
 `nanojud` é uma biblioteca open source para transformar dados públicos judiciais em informação estruturada, auditável e útil para rotinas jurídicas.
 
 Ela não substitui análise jurídica. Ela reduz o trabalho operacional de coletar, organizar e conferir informações públicas.
@@ -30,6 +32,13 @@ O projeto entrega uma camada técnica para automatizar essa coleta de forma loca
 - CLI.
 - MCP local para agentes de IA.
 - Documentação de LGPD, governança, reprodutibilidade e uso responsável.
+
+## Exemplo rápido
+
+```bash
+nanojud consultar 0015020-23.2010.8.26.0053
+nanojud linha-do-tempo 0015020-23.2010.8.26.0053 --recentes-primeiro --limite 20
+```
 
 ## Jornada prática
 
