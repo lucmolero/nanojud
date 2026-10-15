@@ -38,6 +38,8 @@ class DadosBasicos(TypedDict, total=False):
     campos_rotulados: dict[str, str]
     outros_assuntos: list[str]
     processo_dependencia: str
+    situacao: str
+    etiquetas: list[str]
 
 
 class Parte(TypedDict, total=False):

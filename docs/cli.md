@@ -34,6 +34,18 @@ Flags úteis:
 - `--salvar-html`: salva HTML bruto da consulta para auditoria local.
 - `--limite-movimentacoes 100`: máximo de movimentações buscadas no eSAJ (`0` busca todas). O eSAJ entrega 5 por requisição, com pausa entre páginas; processos grandes levam mais tempo. Quando há corte, `origem.movimentacoes_completas` fica `false` e `origem.aviso_movimentacoes` explica.
 
+## Novidades desde uma data e timeline dos eventos recentes
+
+```bash
+nanojud timeline 0015020-23.2010.8.26.0053 --desde 2026-08-01
+nanojud timeline 0015020-23.2010.8.26.0053 --recent-first --limit 20
+nanojud extract 0015020-23.2010.8.26.0053 --limite-movimentacoes 0
+```
+
+- `--desde AAAA-MM-DD`: só movimentações e comunicações a partir da data; a paginação do eSAJ para ao chegar em dados mais antigos.
+- `--recent-first --limit N`: busca no eSAJ só as N movimentações mais recentes, o que é bem mais rápido que a timeline completa.
+- `--limite-movimentacoes`: máximo de movimentações do eSAJ (`0` busca todas; padrão 100).
+
 ## Listar partes
 
 ```bash

@@ -75,7 +75,7 @@ def test_create_client_retorna_cliente_configuravel():
 
 
 def test_search_processo_resume_extrato(monkeypatch):
-    monkeypatch.setattr(api, "get_extrato", lambda numero: _extrato())
+    monkeypatch.setattr(api, "get_extrato", lambda numero, **kwargs: _extrato())
 
     resumo = api.search_processo("1076539-20.2019.8.26.0100")
 
@@ -89,7 +89,7 @@ def test_search_processo_usa_movimentacao_mais_recente_por_data(monkeypatch):
         {"titulo": "Mais recente", "data": "31/07/2026"},
         {"titulo": "Mais antiga", "data": "01/01/2020"},
     ]
-    monkeypatch.setattr(api, "get_extrato", lambda numero: extrato)
+    monkeypatch.setattr(api, "get_extrato", lambda numero, **kwargs: extrato)
 
     resumo = api.search_processo("1076539-20.2019.8.26.0100")
 
@@ -98,7 +98,7 @@ def test_search_processo_usa_movimentacao_mais_recente_por_data(monkeypatch):
 
 
 def test_resumo_rapido_usa_partes_do_extrato(monkeypatch):
-    monkeypatch.setattr(api, "get_extrato", lambda numero: _extrato())
+    monkeypatch.setattr(api, "get_extrato", lambda numero, **kwargs: _extrato())
 
     resumo = api.resumo_rapido("1076539-20.2019.8.26.0100")
 
@@ -173,7 +173,7 @@ def test_get_extrato_delega_parametros(monkeypatch):
 
 
 def test_get_partes_retorna_fallback(monkeypatch):
-    monkeypatch.setattr(api, "get_extrato", lambda numero: {"status": "ok"})
+    monkeypatch.setattr(api, "get_extrato", lambda numero, **kwargs: {"status": "ok"})
 
     partes = api.get_partes("1076539-20.2019.8.26.0100")
 

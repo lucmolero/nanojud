@@ -10,7 +10,7 @@ from typing import Any, TypeAlias, cast
 
 from . import api
 from .exceptions import NanoJudError
-from .timeline import compactar_timeline
+from .timeline import compactar_timeline, limite_movimentacoes_para
 
 JsonPayload: TypeAlias = dict[str, Any] | list[Any]
 
@@ -30,6 +30,11 @@ def _emitir(payload: JsonPayload, out: str | None, rotulo: str) -> None:
         return
     Path(out).write_text(_format_json(payload), encoding="utf-8")
     print(f"{rotulo} salvo em: {out}")
+
+
+def _limite(valor: int | None, padrao: int | None = 100) -> int | None:
+    """Traduz --limite-movimentacoes: ausente usa o padrão; 0 busca todas."""
+    return padrao if valor is None else (valor or None)
 
 
 def _erro_json(exc: Exception) -> str:
@@ -134,6 +139,15 @@ def main(argv: list[str] | None = None) -> int:
         "--raw", action="store_true", help="Incluir payload bruto quando disponível"
     )
     extract_cmd.add_argument(
+        "--desde", default="", help="Só dados a partir desta data ISO yyyy-mm-dd"
+    )
+    extract_cmd.add_argument(
+        "--limite-movimentacoes",
+        type=int,
+        default=None,
+        help="Máximo de movimentações do eSAJ (0 busca todas; padrão 100)",
+    )
+    extract_cmd.add_argument(
         "--out", default=None, help="Arquivo de saída JSON (sem ele, imprime na tela)"
     )
 
@@ -150,6 +164,15 @@ def main(argv: list[str] | None = None) -> int:
         "--djen-data-inicio", default="", help="Data inicial DJEN ISO yyyy-mm-dd"
     )
     timeline_cmd.add_argument("--envelope", action="store_true", help="Salvar envelope completo")
+    timeline_cmd.add_argument(
+        "--desde", default="", help="Só dados a partir desta data ISO yyyy-mm-dd"
+    )
+    timeline_cmd.add_argument(
+        "--limite-movimentacoes",
+        type=int,
+        default=None,
+        help="Máximo de movimentações do eSAJ (0 busca todas; padrão 100)",
+    )
     timeline_cmd.add_argument("--limit", type=int, default=0, help="Limitar eventos retornados")
     timeline_cmd.add_argument(
         "--recent-first", action="store_true", help="Retornar eventos mais recentes primeiro"
@@ -226,6 +249,8 @@ def main(argv: list[str] | None = None) -> int:
                 include_raw=args.raw,
                 datajud_api_key=args.datajud_api_key,
                 djen_data_inicio=args.djen_data_inicio,
+                desde=args.desde,
+                limite_movimentacoes=_limite(args.limite_movimentacoes),
             )
             _emitir(cast(JsonPayload, extracao), args.out, "Extração")
             return 0
@@ -236,6 +261,11 @@ def main(argv: list[str] | None = None) -> int:
                 sources=args.source or ("esaj", "datajud", "djen"),
                 datajud_api_key=args.datajud_api_key,
                 djen_data_inicio=args.djen_data_inicio,
+                desde=args.desde,
+                limite_movimentacoes=_limite(
+                    args.limite_movimentacoes,
+                    padrao=limite_movimentacoes_para(args.limit, args.recent_first, 100),
+                ),
             )
             timeline_resultado = compactar_timeline(
                 cast(list[Any], cast(dict[str, Any], extracao).get("timeline", [])),

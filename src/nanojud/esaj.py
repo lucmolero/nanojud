@@ -28,6 +28,7 @@ from .exceptions import (
     URLInvalida,
 )
 from .models import Documento, Extrato
+from .normalization import normalizar_data
 from .utils import (
     classificar_polo,
     limpar,
@@ -41,7 +42,10 @@ ESAJ_BASE = "https://esaj.tjsp.jus.br/cpopg"
 PASTA_BASE = "https://esaj.tjsp.jus.br/pastadigital/"
 MOVIMENTACOES_AJAX_URL = f"{ESAJ_BASE}/carregarMovimentacoesAjax.do"
 LIMITE_MOVIMENTACOES = 100
+LIMITE_RESUMO = 5  # uma página: basta para a última movimentação
 PAUSA_PAGINAS = 0.5
+ESPERA_BLOQUEIO = 3.0  # o eSAJ recusa consultas em sequência muito rápida
+TENTATIVAS_BLOQUEIO = 3
 MAX_PAGINAS_MOVIMENTACOES = 1000
 RAW_HTML_DIR = Path.cwd() / "esaj_raw" / "tjsp" / "cpopg"
 USER_AGENT = (
@@ -152,10 +156,38 @@ def _seguir_lista_se_preciso(
     return _get(session, urljoin(f"{ESAJ_BASE}/", href), **kwargs)
 
 
+def _pagina_bloqueada(response: requests.Response) -> bool:
+    """O eSAJ devolve a tela de busca com o aviso de consultas simultâneas, sem o processo."""
+    return "consultas simult" in str(getattr(response, "text", "")).lower()
+
+
 def carregar_pagina(
+    session: requests.Session,
+    entrada: str,
+    timeout: float | None = None,
+    sleep: Callable[[float], None] = time.sleep,
+) -> requests.Response:
+    """Carrega processo por CNJ ou URL pública do eSAJ/TJSP.
+
+    Consultas em sequência muito rápida recebem do eSAJ o aviso de "múltiplas consultas
+    simultâneas" no lugar do processo; a página é tentada de novo após uma pausa, e se o
+    bloqueio persistir o erro é de indisponibilidade (nunca "processo não encontrado").
+    """
+    for tentativa in range(TENTATIVAS_BLOQUEIO):
+        response = _carregar_pagina_uma_vez(session, entrada, timeout)
+        if not _pagina_bloqueada(response):
+            return response
+        if tentativa + 1 < TENTATIVAS_BLOQUEIO:
+            sleep(ESPERA_BLOQUEIO)
+    raise ConsultaIndisponivel(
+        "O eSAJ recusou a consulta por múltiplas consultas simultâneas; "
+        "aguarde alguns segundos e tente de novo."
+    )
+
+
+def _carregar_pagina_uma_vez(
     session: requests.Session, entrada: str, timeout: float | None = None
 ) -> requests.Response:
-    """Carrega processo por CNJ ou URL pública do eSAJ/TJSP."""
     if entrada.lower().startswith(("http://", "https://")):
         _validar_url_esaj(entrada)
         kwargs = {"allow_redirects": True}
@@ -228,6 +260,13 @@ def extrair_campos_rotulados(container: Any) -> dict[str, str]:
     return campos
 
 
+def _etiquetas(soup: BeautifulSoup) -> list[str]:
+    """Etiquetas do cabeçalho do processo (situação, segredo de justiça, prioridades...)."""
+    container = soup.find(id="containerDadosPrincipaisProcesso")
+    textos = [limpar(t.get_text(" ", strip=True)) for t in (container or soup).select(".unj-tag")]
+    return list(dict.fromkeys(texto for texto in textos if texto))
+
+
 def extrair_dados_basicos(soup: BeautifulSoup, url_final: str) -> dict[str, Any]:
     campos_rotulados: dict[str, str] = {}
     for container_id in ("containerDadosPrincipaisProcesso", "maisDetalhes"):
@@ -247,6 +286,8 @@ def extrair_dados_basicos(soup: BeautifulSoup, url_final: str) -> dict[str, Any]
         "valor_acao": texto_id(soup, "valorAcaoProcesso"),
         "url": url_final,
         "campos_rotulados": campos_rotulados,
+        "situacao": texto_id(soup, "labelSituacaoProcesso"),
+        "etiquetas": _etiquetas(soup),
     }
 
     dependencia = re.search(r"Depend[êe]ncia\s*\(([^)]+)\)", dados["distribuicao"], re.I)
@@ -320,7 +361,8 @@ def extrair_partes(soup: BeautifulSoup) -> dict[str, list[dict[str, Any]]]:
         tabela_todas = soup.find("table", {"class": lambda c: c and "todasPartes" in c})
         todas = extrair_partes_tabela(tabela_todas)
 
-    base_para_polos = todas or principais
+    todas = todas or principais  # processos pequenos só trazem a tabela de partes principais
+    base_para_polos = todas
     polo_ativo = []
     polo_passivo = []
     polo_desconhecido = []
@@ -513,10 +555,12 @@ def carregar_movimentacoes_ajax(
     pausa: float = PAUSA_PAGINAS,
     timeout: float | None = None,
     sleep: Callable[[float], None] = time.sleep,
+    desde: str = "",
 ) -> tuple[list[dict[str, Any]], bool, str]:
     """Pagina carregarMovimentacoesAjax.do (cursor opaco, 5 linhas por página).
 
-    Retorna (movimentos, completo, aviso). ``limite`` vazio ou 0 busca tudo.
+    Retorna (movimentos, completo, aviso). ``limite`` vazio ou 0 busca tudo. ``desde``
+    (YYYY-MM-DD) para a paginação ao chegar em movimentos mais antigos, que vêm por último.
     Falha de rede no meio devolve o que já foi coletado com ``completo=False``.
     """
     movimentos: list[dict[str, Any]] = []
@@ -536,6 +580,8 @@ def carregar_movimentacoes_ajax(
         fragmento = BeautifulSoup(response.text, "html.parser")
         movimentos.extend(_movimentos_das_linhas(fragmento, len(movimentos)))
         cursor = _proximo_cursor(fragmento)
+        if desde and _passou_de(movimentos, desde):
+            return _a_partir_de(movimentos, desde), True, ""
         if not cursor:
             return movimentos, True, ""
         if limite and len(movimentos) >= limite:
@@ -546,6 +592,17 @@ def carregar_movimentacoes_ajax(
         cursores_vistos.add(cursor)
         sleep(pausa)
     return movimentos, False, "Movimentações incompletas: paginação não terminou."
+
+
+def _a_partir_de(movimentos: list[dict[str, Any]], desde: str) -> list[dict[str, Any]]:
+    """Mantém movimentos sem data legível e os de data >= ``desde`` (ISO)."""
+    return [m for m in movimentos if (normalizar_data(m.get("data"))["iso"] or desde) >= desde]
+
+
+def _passou_de(movimentos: list[dict[str, Any]], desde: str) -> bool:
+    datas = [normalizar_data(m.get("data"))["iso"] for m in movimentos]
+    datas = [d for d in datas if d]
+    return bool(datas) and datas[-1] < desde
 
 
 def tabela_apos_titulo(soup: BeautifulSoup, titulo_regex: str) -> Any:
@@ -925,6 +982,7 @@ def montar_extrato(
     timeout: float | None = None,
     limite_movimentacoes: int | None = LIMITE_MOVIMENTACOES,
     pausa_paginas: float = PAUSA_PAGINAS,
+    desde: str = "",
 ) -> Extrato:
     session = session or criar_session(timeout=timeout or 30.0)
     response = carregar_pagina(session, entrada, timeout=timeout)
@@ -946,7 +1004,10 @@ def montar_extrato(
             limite=limite_movimentacoes,
             pausa=pausa_paginas,
             timeout=timeout,
+            desde=desde,
         )
+    elif desde:
+        movimentos = _a_partir_de(movimentos, desde)
     documentos_unicos: dict[str, Documento] = {}
     restritos_unicos: dict[str, Documento] = {}
     for movimento in movimentos:
