@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import time
 from collections.abc import Callable
 from typing import Any
@@ -41,7 +42,14 @@ def _extrair_items(data: Any) -> list[dict[str, Any]]:
     return []
 
 
+def _incidente(texto: str) -> str:
+    """Sufixo do incidente (ex.: /47) quando a comunicação é de um incidente do processo."""
+    match = re.match(r"\s*Processo\s+\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4}/(\d+)", texto)
+    return match.group(1) if match else ""
+
+
 def _normalizar_item(item: dict[str, Any]) -> dict[str, Any]:
+    texto = str(item.get("texto", ""))
     return {
         "id": item.get("id", ""),
         "tipoComunicacao": item.get("tipoComunicacao", item.get("tipoDocumento", "")),
@@ -49,7 +57,18 @@ def _normalizar_item(item: dict[str, Any]) -> dict[str, Any]:
         "dataDisponibilizacao": _parse_data(item),
         "siglaTribunal": item.get("siglaTribunal", ""),
         "nomeClasse": item.get("nomeClasse", ""),
-        "texto": str(item.get("texto", "")),
+        "texto": texto,
+        "numero_processo": str(
+            item.get("numeroprocessocommascara") or item.get("numero_processo") or ""
+        ),
+        "incidente": _incidente(texto),
+        "numero_comunicacao": item.get("numeroComunicacao", ""),
+        "hash": item.get("hash", ""),
+        "status": item.get("status", ""),
+        "ativo": item.get("ativo", True),
+        "data_cancelamento": item.get("data_cancelamento", ""),
+        "motivo_cancelamento": item.get("motivo_cancelamento", ""),
+        "advogados": item.get("destinatarioadvogados", []),
         "destinatarios": item.get("destinatarios", []),
         "link": item.get("link", ""),
         "meio": item.get("meio", ""),

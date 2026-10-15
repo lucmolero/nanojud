@@ -172,3 +172,33 @@ def test_consultar_processo_falha_requests_apos_retry():
         assert "rede fora" in str(exc)
     else:
         raise AssertionError("Falha requests deveria gerar ConsultaIndisponivel")
+
+
+def test_normalizar_item_preserva_numero_incidente_e_cancelamento():
+    item = _normalizar_item(
+        {
+            "id": 1,
+            "numero_processo": "00150202320108260053",
+            "numeroprocessocommascara": "0015020-23.2010.8.26.0053",
+            "texto": "Processo 0015020-23.2010.8.26.0053/47 - Requisição de Pequeno Valor - ADV: X",
+            "numeroComunicacao": 9,
+            "hash": "abc",
+            "status": "P",
+            "ativo": False,
+            "motivo_cancelamento": "Erro",
+            "destinatarioadvogados": [{"advogado": {"nome": "X"}}],
+        }
+    )
+
+    assert item["numero_processo"] == "0015020-23.2010.8.26.0053"
+    assert item["incidente"] == "47"
+    assert item["ativo"] is False
+    assert item["motivo_cancelamento"] == "Erro"
+    assert item["advogados"] == [{"advogado": {"nome": "X"}}]
+    assert item["hash"] == "abc"
+
+
+def test_comunicacao_do_processo_principal_nao_tem_incidente():
+    item = _normalizar_item({"texto": "Processo 0015020-23.2010.8.26.0053 (053.10.015020-1) - X"})
+
+    assert item["incidente"] == ""

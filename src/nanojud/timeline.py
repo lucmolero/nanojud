@@ -22,6 +22,7 @@ def build_timeline(
     registros.extend(_timeline_esaj(esaj_extrato or {}, include_payload=include_payload))
     registros.extend(_timeline_datajud(datajud_extracao or {}, include_payload=include_payload))
     registros.extend(_timeline_djen(djen_comunicacoes or [], include_payload=include_payload))
+    _garantir_ids_unicos(registros)
     return sorted(
         registros,
         key=lambda item: (
@@ -30,6 +31,17 @@ def build_timeline(
             item.get("id", ""),
         ),
     )
+
+
+def _garantir_ids_unicos(registros: list[TimelineRecord]) -> None:
+    """Movimentos repetidos (mesma data, código e título) ganham sufixo sequencial no id."""
+    vistos: dict[str, int] = {}
+    for registro in registros:
+        base = registro["id"]
+        n = vistos.get(base, 0)
+        vistos[base] = n + 1
+        if n:
+            registro["id"] = hashlib.sha1(f"{base}|{n}".encode()).hexdigest()
 
 
 def compactar_timeline(
@@ -99,6 +111,8 @@ def _timeline_datajud(extracao: dict[str, Any], *, include_payload: bool) -> lis
             "texto": str(movimento.get("complementos") or ""),
             "documentos": [],
         }
+        if movimento.get("grau"):
+            record["grau"] = str(movimento["grau"])
         if include_payload:
             payload = movimento.get("payload_origem")
             record["payload_origem"] = payload if isinstance(payload, dict) else movimento
