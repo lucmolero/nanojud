@@ -14,6 +14,7 @@ from .cache import JsonFileCache
 from .config import NanoJudConfig
 from .models import Extrato, Movimentacao, ResumoProcesso
 from .normalization import normalizar_data
+from .utils import eh_tjsp, validar_numero_cnj
 from .version import __version__
 
 
@@ -79,6 +80,7 @@ class NanoJudClient:
             logger=self.logger,
             user_agent=self.config.resolved_user_agent(__version__),
         )
+        self._extratos: dict[str, Extrato] = {}  # último extrato completo por processo
         self.cache = (
             JsonFileCache(self.config.cache_dir, self.config.cache_ttl_seconds)
             if self.config.cache_enabled
@@ -86,7 +88,13 @@ class NanoJudClient:
         )
 
     def search_processo(self, numero: str) -> ResumoProcesso:
-        extrato = self.get_extrato(numero, limite_movimentacoes=esaj.LIMITE_RESUMO)
+        """Resumo do processo. Reaproveita o extrato já buscado por este cliente."""
+        numero_cnj = validar_numero_cnj(numero, segmento=None, tribunal=None)
+        if not eh_tjsp(numero_cnj):
+            return datajud.resumo_do_datajud(self.consultar_datajud(numero_cnj))
+        extrato = self._extratos.get(numero_cnj) or self.get_extrato(
+            numero_cnj, limite_movimentacoes=esaj.LIMITE_RESUMO
+        )
         return _resumo_do_extrato(extrato)
 
     def get_extrato(
@@ -130,6 +138,10 @@ class NanoJudClient:
         )
         if self.cache and not baixar_pecas:
             self.cache.set("extrato", cache_key, extrato)
+        if not desde:
+            self._extratos[numero] = extrato
+            while len(self._extratos) > 64:  # limite simples de memória
+                self._extratos.pop(next(iter(self._extratos)))
         return extrato
 
     def get_partes(self, numero: str) -> dict[str, Any]:
@@ -209,6 +221,15 @@ class NanoJudClient:
             ),
         )
 
+    def _preparar_documentos(
+        self, extrato: dict[str, Any], movimentos: list[dict[str, Any]], limite: int
+    ) -> None:
+        numero = (extrato.get("dados_basicos") or {}).get("numero") or (
+            extrato.get("origem") or {}
+        ).get("entrada", "")
+        if numero:
+            esaj.preparar_documentos(self.session, numero, movimentos, limite)
+
     def baixar_pecas(
         self,
         extrato: dict[str, Any],
@@ -222,6 +243,7 @@ class NanoJudClient:
             movimentos = [{"documentos": documentos}]
         else:
             movimentos = extrato.get("movimentacoes", [])
+        self._preparar_documentos(extrato, movimentos, limite)
         return esaj.baixar_pecas_publicas(
             self.session,
             movimentos,
@@ -241,6 +263,7 @@ class NanoJudClient:
         movimentos = (
             [{"documentos": documentos}] if documentos else extrato.get("movimentacoes", [])
         )
+        self._preparar_documentos(extrato, movimentos, limite)
         return esaj.ler_pecas_publicas(
             self.session,
             movimentos,

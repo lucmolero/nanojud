@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib
 import json
 import re
+import threading
 import time
 from collections.abc import Callable
 from datetime import datetime, timezone
@@ -44,7 +45,9 @@ MOVIMENTACOES_AJAX_URL = f"{ESAJ_BASE}/carregarMovimentacoesAjax.do"
 LIMITE_MOVIMENTACOES = 100
 LIMITE_RESUMO = 5  # uma página: basta para a última movimentação
 PAUSA_PAGINAS = 0.5
-ESPERA_BLOQUEIO = 3.0  # o eSAJ recusa consultas em sequência muito rápida
+# O eSAJ recusa consultas com menos de ~1 s de intervalo, por IP (não por sessão).
+INTERVALO_CONSULTAS = 1.1
+ESPERA_BLOQUEIO = 1.5
 TENTATIVAS_BLOQUEIO = 3
 MAX_PAGINAS_MOVIMENTACOES = 1000
 RAW_HTML_DIR = Path.cwd() / "esaj_raw" / "tjsp" / "cpopg"
@@ -156,6 +159,20 @@ def _seguir_lista_se_preciso(
     return _get(session, urljoin(f"{ESAJ_BASE}/", href), **kwargs)
 
 
+_ritmo_lock = threading.Lock()
+_ultima_consulta = 0.0
+
+
+def _aguardar_ritmo() -> None:
+    """Garante o intervalo mínimo entre consultas de processo em todo o processo Python."""
+    global _ultima_consulta
+    with _ritmo_lock:
+        espera = _ultima_consulta + INTERVALO_CONSULTAS - time.monotonic()
+        if espera > 0:
+            time.sleep(espera)
+        _ultima_consulta = time.monotonic()
+
+
 def _pagina_bloqueada(response: requests.Response) -> bool:
     """O eSAJ devolve a tela de busca com o aviso de consultas simultâneas, sem o processo."""
     return "consultas simult" in str(getattr(response, "text", "")).lower()
@@ -201,9 +218,16 @@ def _carregar_pagina_uma_vez(
     if timeout is not None:
         open_kwargs["timeout"] = timeout
         search_kwargs["timeout"] = timeout
+    _aguardar_ritmo()
     _get(session, f"{ESAJ_BASE}/open.do", **open_kwargs)
     response = _get(session, montar_url_busca(numero), **search_kwargs)
     return _seguir_lista_se_preciso(session, response, timeout=timeout)
+
+
+MSG_SEM_INFORMACOES = (
+    "O eSAJ não retornou informações para este número. Pode ser processo sigiloso, "
+    "de outro sistema ou número inexistente."
+)
 
 
 def detectar_estado_pagina(soup: BeautifulSoup, response: requests.Response) -> None:
@@ -221,11 +245,9 @@ def detectar_estado_pagina(soup: BeautifulSoup, response: requests.Response) -> 
         "não foi encontrado nenhum processo",
     ]
     if any(sinal in texto for sinal in sinais_nao_encontrado):
-        raise ProcessoNaoEncontrado("Processo não encontrado no eSAJ/TJSP.")
+        raise ProcessoNaoEncontrado(MSG_SEM_INFORMACOES)
     if not soup.find(id="numeroProcesso"):
-        raise ProcessoNaoEncontrado(
-            f"Resposta do eSAJ não contém dados de processo. URL final: {response.url}"
-        )
+        raise ProcessoNaoEncontrado(MSG_SEM_INFORMACOES)
 
 
 def processo_codigo(url: str) -> str:
@@ -556,11 +578,13 @@ def carregar_movimentacoes_ajax(
     timeout: float | None = None,
     sleep: Callable[[float], None] = time.sleep,
     desde: str = "",
+    ate_documentos: set[str] | None = None,
 ) -> tuple[list[dict[str, Any]], bool, str]:
     """Pagina carregarMovimentacoesAjax.do (cursor opaco, 5 linhas por página).
 
     Retorna (movimentos, completo, aviso). ``limite`` vazio ou 0 busca tudo. ``desde``
     (YYYY-MM-DD) para a paginação ao chegar em movimentos mais antigos, que vêm por último.
+    ``ate_documentos`` (códigos de documento) para assim que todos aparecerem nas linhas lidas.
     Falha de rede no meio devolve o que já foi coletado com ``completo=False``.
     """
     movimentos: list[dict[str, Any]] = []
@@ -582,6 +606,8 @@ def carregar_movimentacoes_ajax(
         cursor = _proximo_cursor(fragmento)
         if desde and _passou_de(movimentos, desde):
             return _a_partir_de(movimentos, desde), True, ""
+        if ate_documentos and ate_documentos <= _codigos_de_documentos(movimentos):
+            return movimentos, True, ""
         if not cursor:
             return movimentos, True, ""
         if limite and len(movimentos) >= limite:
@@ -592,6 +618,10 @@ def carregar_movimentacoes_ajax(
         cursores_vistos.add(cursor)
         sleep(pausa)
     return movimentos, False, "Movimentações incompletas: paginação não terminou."
+
+
+def _codigos_de_documentos(movimentos: list[dict[str, Any]]) -> set[str]:
+    return {doc.get("cd_documento", "") for m in movimentos for doc in m.get("documentos", [])}
 
 
 def _a_partir_de(movimentos: list[dict[str, Any]], desde: str) -> list[dict[str, Any]]:
@@ -836,7 +866,8 @@ def baixar_pecas_publicas(
         params = paginas[0].get("parametros_pdf", "")
         response = _get(session, urljoin(PASTA_BASE, f"getPDF.do?{params}"), timeout=30)
         if not response.content.startswith(b"%PDF"):
-            doc["download_status"] = "nao_pdf"
+            expirada = MARCA_SESSAO_EXPIRADA in _texto_resposta_nao_pdf(response, 400).lower()
+            doc["download_status"] = "sessao_expirada" if expirada else "nao_pdf"
             continue
 
         titulo = nome_arquivo_seguro(doc.get("titulo", "documento"))
@@ -891,7 +922,10 @@ def ler_pecas_publicas(
                 session, doc
             )
             doc["pasta_digital"] = pasta_digital
-            registro["pasta_digital"] = pasta_digital
+            registro["pasta_digital"] = {
+                "status": pasta_digital.get("status", ""),
+                "paginas": len(pasta_digital.get("paginas") or []),
+            }
             if pasta_digital.get("status") != "ok":
                 registro["status"] = pasta_digital.get("status", "erro_pasta_digital")
                 documentos_lidos.append(registro)
@@ -917,6 +951,13 @@ def ler_pecas_publicas(
                 registro["truncado"] = bool(max_chars and len(texto) >= max_chars)
             else:
                 texto = _texto_resposta_nao_pdf(response, max_chars=max_chars)
+                if MARCA_SESSAO_EXPIRADA in texto.lower():
+                    registro["status"] = "sessao_expirada"
+                    registro["mensagem"] = (
+                        "O eSAJ recusou a leitura: a pasta digital só abre na sessão da consulta."
+                    )
+                    documentos_lidos.append(registro)
+                    continue
                 registro["status"] = "texto_html_extraido" if texto else "nao_pdf"
                 registro["texto"] = texto
                 registro["texto_chars"] = len(texto)
@@ -952,6 +993,35 @@ def extrair_texto_pdf_bytes(conteudo: bytes, max_chars: int = 4000) -> tuple[str
         return texto_final, "texto_extraido" if texto_final else "pdf_sem_texto_extraido"
     except Exception as exc:  # pragma: no cover - depende da estrutura interna do PDF
         return "", f"erro_pdf:{type(exc).__name__}"
+
+
+MARCA_SESSAO_EXPIRADA = "sua sessão expirou"
+
+
+def preparar_documentos(
+    session: requests.Session,
+    numero: str,
+    movimentos: list[dict[str, Any]],
+    limite: int = 0,
+) -> None:
+    """Deixa a sessão apta a abrir as pastas digitais dos documentos que serão lidos.
+
+    O eSAJ só libera um documento na sessão que abriu o processo e carregou a página de
+    movimentações onde ele aparece; o ticket guardado em um extrato salvo (JSON) já
+    venceu. Sem isso a pasta devolve "sessão expirou" ou fica sem conteúdo.
+    """
+    docs = list(iterar_docs_publicos(movimentos))
+    alvo = {d.get("cd_documento", "") for d in (docs[:limite] if limite else docs)}
+    for doc in docs:
+        doc.pop("pasta_digital", None)
+    response = carregar_pagina(session, numero)
+    if alvo and BeautifulSoup(response.text, "html.parser").find(id="btnExibirMovimentacoes"):
+        carregar_movimentacoes_ajax(
+            session,
+            codigo_para_movimentacoes(response.text, response.url),
+            limite=None,
+            ate_documentos=alvo,
+        )
 
 
 def _texto_resposta_nao_pdf(response: Any, max_chars: int) -> str:

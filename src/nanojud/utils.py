@@ -53,6 +53,11 @@ def validar_numero_cnj(numero: str, segmento: str | None = "8", tribunal: str | 
     return normalizado
 
 
+def eh_tjsp(numero_cnj: str) -> bool:
+    """Indica se o número CNJ (com máscara) é da Justiça Estadual de São Paulo."""
+    return numero_cnj.split(".")[-3:-1] == ["8", "26"]
+
+
 def normalizar_chave(texto: str) -> str:
     chave = unicodedata.normalize("NFKD", limpar(texto))
     chave = "".join(ch for ch in chave if not unicodedata.combining(ch)).lower()
