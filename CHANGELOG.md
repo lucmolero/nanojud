@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Adicionado
+
+- Envelope de `extract_process` ganha `divergencias`: compara classe, data de distribuicao/ajuizamento e ultima movimentacao entre eSAJ e DataJud, e informa quando ha mais de um grau no DataJud ou comunicacoes de incidentes no DJEN.
+- `normalizar_data` aceita o formato compacto do DataJud (`20120910171334`).
+
 ### Corrigido
 
 - `partes` classifica corretamente os polos com as abreviaturas do eSAJ (`Imptte`, `Imptdo`, `Apelte`, `Agvte` etc.); antes `polo_ativo` e `polo_passivo` vinham vazios.

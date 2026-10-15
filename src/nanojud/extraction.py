@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any, cast
 
 import requests
 
 from . import datajud, djen, esaj
+from .divergencias import detectar_divergencias
 from .schemas import (
     SCHEMA_VERSION,
     ExtractionEnvelope,
@@ -138,6 +139,7 @@ def extract_process(
         "warnings": warnings,
         "errors": errors,
         "source_status": source_status,
+        "divergencias": cast(list[dict[str, Any]], detectar_divergencias(data)),
     }
     if include_raw:
         envelope["raw"] = raw

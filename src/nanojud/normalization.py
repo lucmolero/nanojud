@@ -45,6 +45,11 @@ def normalizar_data(valor: object) -> dict[str, str]:
     if re.match(r"^\d{4}-\d{2}-\d{2}", original):
         return {"original": original, "iso": original[:10]}
 
+    compacta = re.match(r"^(\d{4})(\d{2})(\d{2})\d{6}$", original)  # ex.: 20120910171334
+    if compacta:
+        ano, mes, dia = compacta.groups()
+        return {"original": original, "iso": f"{ano}-{mes}-{dia}"}
+
     match_br = re.search(r"(\d{2})/(\d{2})/(\d{4})", original)
     if match_br:
         dia, mes, ano = match_br.groups()
