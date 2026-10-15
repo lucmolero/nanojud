@@ -24,12 +24,15 @@ nanojud extrato 0015020-23.2010.8.26.0053 --out extrato.json
 
 Salva o extrato completo em um arquivo JSON.
 
+Sem `--out`, os comandos `extrato`, `datajud`, `djen`, `extract`, `timeline` e `ler-pecas` imprimem o JSON na tela; com `--out`, gravam o arquivo e informam o caminho.
+
 Flags úteis:
 
 - `--inspecionar-pecas`: tenta obter metadados de peças públicas candidatas.
 - `--baixar-pecas`: tenta baixar peças públicas candidatas quando tecnicamente possível.
 - `--limite-pecas 3`: limita a quantidade de peças baixadas.
 - `--salvar-html`: salva HTML bruto da consulta para auditoria local.
+- `--limite-movimentacoes 100`: máximo de movimentações buscadas no eSAJ (`0` busca todas). O eSAJ entrega 5 por requisição, com pausa entre páginas; processos grandes levam mais tempo. Quando há corte, `origem.movimentacoes_completas` fica `false` e `origem.aviso_movimentacoes` explica.
 
 ## Listar partes
 

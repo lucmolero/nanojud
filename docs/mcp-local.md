@@ -117,7 +117,7 @@ Não invente teses e não dê aconselhamento jurídico.
 - `server_info`: retorna metadados do servidor MCP local.
 - `validar_cnj`: valida e normaliza numero CNJ.
 - `extrair_numeros_cnj_de_texto`: extrai numeros CNJ encontrados em texto livre.
-- `consultar_esaj`: consulta extrato publico do eSAJ/TJSP.
+- `consultar_esaj`: consulta extrato publico do eSAJ/TJSP. Aceita `limite_movimentacoes` (padrao 100; `0` busca todas).
 - `consultar_datajud`: consulta dados processuais estruturados no DataJud/CNJ.
 - `consultar_djen`: consulta comunicacoes do DJEN e retorna `count` e `comunicacoes`.
 - `extrair_processo`: retorna envelope versionado por fonte.

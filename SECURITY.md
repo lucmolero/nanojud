@@ -4,7 +4,7 @@ Se você encontrar uma falha de segurança, exposição indevida de dados ou com
 
 ## Como reportar
 
-Entre em contato diretamente com o mantenedor pelo canal público indicado no README e envie:
+Use o relato privado de vulnerabilidades do GitHub: <https://github.com/lucmolero/nanojud/security/advisories/new>. Só o mantenedor vê o relato. Envie:
 
 - descrição resumida do problema;
 - impacto potencial;

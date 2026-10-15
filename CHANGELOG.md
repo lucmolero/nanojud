@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Seguranca
+
+- eSAJ: o `href` de documentos lido de um extrato JSON externo (`baixar`, `ler-pecas`, inspecao de pecas) agora precisa ser `https://esaj.tjsp.jus.br/cpopg/` ou `/pastadigital/`; antes qualquer URL era requisitada.
+- `SECURITY.md` passa a apontar para o relato privado de vulnerabilidades do GitHub.
+
 ### Corrigido
 
 - DataJud: consulta todos os graus do numero CNJ (antes `size: 1` pegava um registro arbitrario). O grau mais baixo define os dados principais, `graus` resume cada registro e cada movimento ganha `grau`.
@@ -12,6 +17,8 @@
 
 ### Adicionado
 
+- Workflow semanal `Live smoke` e testes live de DataJud e DJEN, para detectar mudancas nas fontes reais.
+- Documentacao de `divergencias`, `graus`, `--limite-movimentacoes` e da saida da CLI sem `--out`.
 - Adiciona guia dedicado de distribuicao PyPI e MCP.
 - Adiciona workflow manual de publicacao no TestPyPI com Trusted Publishing.
 - Documenta instalacao de usuario via `python -m pip install "nanojud[mcp]"`.

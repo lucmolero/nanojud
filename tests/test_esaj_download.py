@@ -149,7 +149,7 @@ def test_baixar_pecas_publicas_baixa_pdf(monkeypatch):
     doc = {
         "cd_documento": "123",
         "titulo": "Decisão",
-        "href": "https://viewer",
+        "href": "https://esaj.tjsp.jus.br/pastadigital/viewer",
         "status_acesso": "publico_candidato",
         "pasta_digital": {"status": "ok", "paginas": [{"parametros_pdf": "idDocumento=ABC"}]},
     }
@@ -165,7 +165,7 @@ def test_baixar_pecas_publicas_marca_nao_pdf():
     doc = {
         "cd_documento": "123",
         "titulo": "Decisão",
-        "href": "https://viewer",
+        "href": "https://esaj.tjsp.jus.br/pastadigital/viewer",
         "status_acesso": "publico_candidato",
         "pasta_digital": {"status": "ok", "paginas": [{"parametros_pdf": "idDocumento=ABC"}]},
     }
@@ -242,7 +242,7 @@ def test_ler_pecas_publicas_pdf_em_memoria(monkeypatch):
     doc = {
         "cd_documento": "123",
         "titulo": "Decisao",
-        "href": "https://viewer",
+        "href": "https://esaj.tjsp.jus.br/pastadigital/viewer",
         "status_acesso": "publico_candidato",
         "pasta_digital": {"status": "ok", "paginas": [{"parametros_pdf": "idDocumento=ABC"}]},
     }
@@ -266,7 +266,7 @@ def test_ler_pecas_publicas_html_em_memoria():
     doc = {
         "cd_documento": "123",
         "titulo": "Despacho",
-        "href": "https://viewer",
+        "href": "https://esaj.tjsp.jus.br/pastadigital/viewer",
         "status_acesso": "publico_candidato",
         "pasta_digital": {"status": "ok", "paginas": [{"parametros_pdf": "idDocumento=ABC"}]},
     }
