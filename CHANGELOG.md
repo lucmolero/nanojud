@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Corrigido
+
+- Corrige a extracao de movimentacoes do eSAJ/TJSP, que passou a carregar a lista sob demanda por `carregarMovimentacoesAjax.do` e vinha vazia (afetava `search`, `extrato` e a timeline).
+- Pagina por cursor com limite configuravel (`limite_movimentacoes`, `--limite-movimentacoes`; 0 busca todas) e pausa entre paginas; o extrato sinaliza `movimentacoes_completas` e `aviso_movimentacoes` quando ha corte ou falha parcial.
+
 ### Adicionado
 
 - Adiciona guia dedicado de distribuicao PyPI e MCP.

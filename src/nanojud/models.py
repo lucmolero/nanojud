@@ -18,6 +18,8 @@ class Origem(TypedDict, total=False):
     url_final: str
     data_coleta: str
     html_bruto: str
+    movimentacoes_completas: bool
+    aviso_movimentacoes: str
 
 
 class DadosBasicos(TypedDict, total=False):
