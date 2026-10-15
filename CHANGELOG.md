@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.5.2] - 2026-10-15
+
 ### Corrigido
 
 - eSAJ: consultas em sequencia muito rapida recebiam o aviso de "multiplas consultas simultaneas" no lugar do processo e eram reportadas como processo nao encontrado. Agora a pagina e tentada de novo apos uma pausa e, se o bloqueio persistir, o erro e de indisponibilidade com mensagem clara.

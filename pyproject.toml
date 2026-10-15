@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nanojud"
-version = "0.5.1"
+version = "0.5.2"
 description = "NanoJud: toolkit Python para extração responsável, normalização e exportação de dados públicos judiciais do eSAJ/TJSP, DataJud/CNJ e DJEN."
 readme = {file = "README.md", content-type = "text/markdown"}
 requires-python = ">=3.10"
