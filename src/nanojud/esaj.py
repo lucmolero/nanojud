@@ -5,6 +5,8 @@ from __future__ import annotations
 import importlib
 import json
 import re
+import time
+from collections.abc import Callable
 from datetime import datetime, timezone
 from io import BytesIO
 from pathlib import Path
@@ -37,6 +39,10 @@ from .version import __version__
 
 ESAJ_BASE = "https://esaj.tjsp.jus.br/cpopg"
 PASTA_BASE = "https://esaj.tjsp.jus.br/pastadigital/"
+MOVIMENTACOES_AJAX_URL = f"{ESAJ_BASE}/carregarMovimentacoesAjax.do"
+LIMITE_MOVIMENTACOES = 100
+PAUSA_PAGINAS = 0.5
+MAX_PAGINAS_MOVIMENTACOES = 1000
 RAW_HTML_DIR = Path.cwd() / "esaj_raw" / "tjsp" / "cpopg"
 USER_AGENT = (
     f"Mozilla/5.0 (compatible; nanojud/{__version__}; +https://github.com/lucmolero/nanojud)"
@@ -456,11 +462,13 @@ def extrair_movimentacoes(soup: BeautifulSoup) -> list[dict[str, Any]]:
     )
     if not tabela:
         return []
+    return _movimentos_das_linhas(tabela)
 
+
+def _movimentos_das_linhas(container: Any, ordem_inicial: int = 0) -> list[dict[str, Any]]:
     movimentos = []
-    for idx, tr in enumerate(
-        tabela.find_all("tr", class_=lambda c: c and "containerMovimentacao" in c), 1
-    ):
+    linhas = container.find_all("tr", class_=lambda c: c and "containerMovimentacao" in c)
+    for idx, tr in enumerate(linhas, ordem_inicial + 1):
         data_tag = tr.find("td", class_=lambda c: c and "dataMovimentacao" in c)
         desc_tag = tr.find("td", class_=lambda c: c and "descricaoMovimentacao" in c)
         if not desc_tag:
@@ -478,6 +486,62 @@ def extrair_movimentacoes(soup: BeautifulSoup) -> list[dict[str, Any]]:
             }
         )
     return movimentos
+
+
+def codigo_para_movimentacoes(html: str, url_final: str) -> str:
+    """Código interno do processo usado pelo carregamento sob demanda de movimentações."""
+    match = re.search(r"codigoProcesso:\s*'([^']+)'", html)
+    return match.group(1) if match else processo_codigo(url_final)
+
+
+def _proximo_cursor(fragmento: Any) -> str:
+    linha = fragmento.find(id="trCursorMovimentacoes")
+    if linha and linha.get("data-cursor"):
+        return str(linha["data-cursor"])
+    campo = fragmento.find(id="cursorMovimentacoesPaginado")
+    return str(campo.get("value") or "") if campo else ""
+
+
+def carregar_movimentacoes_ajax(
+    session: requests.Session,
+    codigo_processo: str,
+    limite: int | None = LIMITE_MOVIMENTACOES,
+    pausa: float = PAUSA_PAGINAS,
+    timeout: float | None = None,
+    sleep: Callable[[float], None] = time.sleep,
+) -> tuple[list[dict[str, Any]], bool, str]:
+    """Pagina carregarMovimentacoesAjax.do (cursor opaco, 5 linhas por página).
+
+    Retorna (movimentos, completo, aviso). ``limite`` vazio ou 0 busca tudo.
+    Falha de rede no meio devolve o que já foi coletado com ``completo=False``.
+    """
+    movimentos: list[dict[str, Any]] = []
+    cursor = ""
+    cursores_vistos: set[str] = set()
+    for _ in range(MAX_PAGINAS_MOVIMENTACOES):
+        params = {"processo.codigo": codigo_processo}
+        if cursor:
+            params["cursor"] = cursor
+        kwargs: dict[str, Any] = {"params": params}
+        if timeout is not None:
+            kwargs["timeout"] = timeout
+        try:
+            response = _get(session, MOVIMENTACOES_AJAX_URL, **kwargs)
+        except (ConsultaIndisponivel, AcessoRestrito, ProcessoNaoEncontrado) as exc:
+            return movimentos, False, f"Movimentações incompletas: {exc}"
+        fragmento = BeautifulSoup(response.text, "html.parser")
+        movimentos.extend(_movimentos_das_linhas(fragmento, len(movimentos)))
+        cursor = _proximo_cursor(fragmento)
+        if not cursor:
+            return movimentos, True, ""
+        if limite and len(movimentos) >= limite:
+            aviso = f"Movimentações limitadas a {limite}; o eSAJ tem mais registros."
+            return movimentos[:limite], False, aviso
+        if cursor in cursores_vistos:
+            break
+        cursores_vistos.add(cursor)
+        sleep(pausa)
+    return movimentos, False, "Movimentações incompletas: paginação não terminou."
 
 
 def tabela_apos_titulo(soup: BeautifulSoup, titulo_regex: str) -> Any:
@@ -853,6 +917,8 @@ def montar_extrato(
     session: requests.Session | None = None,
     pasta_pecas: Path | None = None,
     timeout: float | None = None,
+    limite_movimentacoes: int | None = LIMITE_MOVIMENTACOES,
+    pausa_paginas: float = PAUSA_PAGINAS,
 ) -> Extrato:
     session = session or criar_session(timeout=timeout or 30.0)
     response = carregar_pagina(session, entrada, timeout=timeout)
@@ -866,6 +932,15 @@ def montar_extrato(
         html_bruto = str(salvar_html_bruto(response.text, numero_html))
 
     movimentos = extrair_movimentacoes(soup)
+    movimentos_completos, aviso_movimentacoes = True, ""
+    if not movimentos and soup.find(id="btnExibirMovimentacoes"):
+        movimentos, movimentos_completos, aviso_movimentacoes = carregar_movimentacoes_ajax(
+            session,
+            codigo_para_movimentacoes(response.text, response.url),
+            limite=limite_movimentacoes,
+            pausa=pausa_paginas,
+            timeout=timeout,
+        )
     documentos_unicos: dict[str, Documento] = {}
     restritos_unicos: dict[str, Documento] = {}
     for movimento in movimentos:
@@ -907,6 +982,8 @@ def montar_extrato(
             "entrada": entrada,
             "url_final": response.url,
             "html_bruto": html_bruto,
+            "movimentacoes_completas": movimentos_completos,
+            "aviso_movimentacoes": aviso_movimentacoes,
             "data_coleta": datetime.now(timezone.utc).isoformat(),
         },
         "dados_basicos": dados_basicos,
