@@ -19,6 +19,16 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Verify the ref is a release tag that matches the package version
+        run: |
+          if [ "$GITHUB_REF_TYPE" != "tag" ]; then
+            echo "Run this workflow from a release tag (vX.Y.Z), not from a branch."; exit 1
+          fi
+          versao=$(python -c "import re; print(re.search(r'__version__ = \"(.+?)\"', open('src/nanojud/version.py').read()).group(1))")
+          if [ "$GITHUB_REF_NAME" != "v$versao" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match package version $versao."; exit 1
+          fi
+
       - name: Upgrade packaging tooling
         run: python -m pip install --upgrade pip "setuptools>=83.0.0" wheel
 

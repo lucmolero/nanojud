@@ -118,7 +118,7 @@ Não invente teses e não dê aconselhamento jurídico.
 - `validar_cnj`: valida e normaliza numero CNJ.
 - `extrair_numeros_cnj_de_texto`: extrai numeros CNJ encontrados em texto livre.
 - `consultar_esaj`: consulta extrato publico do eSAJ/TJSP. Aceita `limite_movimentacoes` (padrao 100; `0` busca todas), `desde` (AAAA-MM-DD) e `compacto` (padrao `true`, omite texto repetido e documentos por movimentacao).
-- `consultar_datajud`: consulta dados processuais estruturados no DataJud/CNJ.
+- `consultar_datajud`: consulta dados processuais estruturados no DataJud/CNJ. Aceita `compacto` (padrao `true`), que omite o `payload_origem` repetido de cada movimento.
 - `consultar_djen`: consulta comunicacoes do DJEN e retorna `count` e `comunicacoes`.
 - `extrair_processo`: retorna envelope versionado por fonte. Aceita `desde` e `compacto` (padrao `true`, mantem so a timeline unificada, sem repetir movimentacoes e comunicacoes em `data`).
 - `gerar_timeline`: retorna timeline cronologica sem interpretacao juridica. Aceita `limit`, `recent_first`, `include_text` e `max_text_chars` para reduzir contexto.

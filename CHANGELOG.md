@@ -4,6 +4,15 @@
 
 ## [0.5.3] - 2026-10-15
 
+### Seguranca
+
+- Pisos de dependencia sem vulnerabilidades conhecidas (auditoria com `pip-audit`): `requests>=2.33.0`, `pypdf>=6.19.0,<7` e `mcp>=1.30.0,<2`. Os pisos anteriores (`requests>=2.28`, `pypdf>=5`, `mcp>=1.0`) permitiam versoes com dezenas de avisos de seguranca; instalacoes novas ja pegavam as versoes recentes, mas ambientes com versoes fixadas antigas nao.
+
+### Corrigido
+
+- `mcp>=1.0` estava errado: o servidor usa `FastMCP`, que so existe a partir do mcp 1.2. O novo piso resolve isso.
+- Links relativos do README (`docs/...`, `SECURITY.md` etc.) quebravam na pagina do projeto no PyPI; agora apontam para o site da documentacao e para o GitHub.
+
 ### Adicionado
 
 - CLI em portugues: ajuda, mensagens de uso e de erro em portugues; apelidos `consultar` (search), `linha-do-tempo` (timeline) e `extrair` (extract); opcoes `--fonte`, `--limite`, `--recentes-primeiro`, `--max-caracteres`, `--ajuda` e `--versao`. Os nomes em ingles continuam valendo.
@@ -13,10 +22,12 @@
 - Erros com "O que fazer": texto no terminal e campo `dica` no JSON; mensagens claras para arquivo de extrato ausente ou invalido; Ctrl+C encerra com mensagem.
 - `python -m nanojud` e `situacao` no resumo do `search`.
 - Novo `docs/guia-do-advogado.md`, com instalacao do Python no Windows, tarefas do dia a dia, como ler o resultado, solucao de problemas e glossario; README, quickstart, guia da CLI e pagina para advogados reorganizados para comecar pelo terminal.
+- MCP: `consultar_datajud` aceita `compacto` (padrao `true`), que omite o `payload_origem` repetido de cada movimento; processos grandes passavam de 150 KB.
 
 ### Alterado
 
 - A linha do tempo `--recentes-primeiro --limite N` nao avisa mais do corte de movimentacoes que a propria CLI escolhe.
+- Os workflows `Publish PyPI` e `Publish TestPyPI` so rodam a partir de uma tag `vX.Y.Z` igual a versao em `version.py`; antes construiam o pacote de qualquer ref.
 
 ## [0.5.2] - 2026-10-15
 
