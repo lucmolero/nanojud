@@ -25,6 +25,18 @@ def compactar_envelope(envelope: dict[str, Any]) -> dict[str, Any]:
     return saida
 
 
+def compactar_datajud(extracao: dict[str, Any]) -> dict[str, Any]:
+    """DataJud sem o ``payload_origem`` de cada movimento e parte (o dado já está normalizado)."""
+    saida = dict(extracao)
+    for chave in ("movimentos", "partes"):
+        saida[chave] = [
+            {k: v for k, v in item.items() if k != "payload_origem"}
+            for item in extracao.get(chave) or []
+        ]
+    saida["compacto"] = True
+    return saida
+
+
 def compactar_extrato(extrato: dict[str, Any]) -> dict[str, Any]:
     """Versão enxuta do extrato eSAJ: movimentações sem texto repetido nem documentos."""
     saida = dict(extrato)

@@ -92,9 +92,13 @@ def create_server() -> Any:
         numero: str,
         include_raw: bool = False,
         api_key: str | None = None,
+        compacto: bool = True,
     ) -> dict[str, Any]:
-        """Consulta dados processuais estruturados na API publica DataJud/CNJ."""
-        return api.consultar_datajud(numero, include_raw=include_raw, api_key=api_key)
+        """Dados do processo na API publica DataJud/CNJ, com todos os graus. compacto=True
+        omite o payload original repetido de cada movimento (processos grandes passam de
+        150 KB); compacto=False devolve tudo."""
+        resultado = api.consultar_datajud(numero, include_raw=include_raw, api_key=api_key)
+        return compactacao.compactar_datajud(resultado) if compacto else resultado
 
     @server.tool()
     def consultar_djen(numero: str, data_inicio: str = "") -> dict[str, Any]:
