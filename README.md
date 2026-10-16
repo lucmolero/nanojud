@@ -32,7 +32,7 @@
   <a href="https://pypi.org/project/nanojud/">
     <img src="https://img.shields.io/pypi/v/nanojud.svg" alt="PyPI" />
   </a>
-  <a href="LICENSE">
+  <a href="https://github.com/lucmolero/nanojud/blob/main/LICENSE">
     <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License: MIT" />
   </a>
   <a href="https://www.python.org/">
@@ -68,7 +68,7 @@
 
 ## Primeiros passos em 2 minutos
 
-Advogado(a) e não programa? Siga o **[Guia do advogado](docs/guia-do-advogado.md)**, com instalação passo a passo no Windows, tarefas do dia a dia e solução de problemas. Em resumo, com o Python 3.10 ou mais novo instalado:
+Advogado(a) e não programa? Siga o **[Guia do advogado](https://lucmolero.github.io/nanojud/guia-do-advogado/)**, com instalação passo a passo no Windows, tarefas do dia a dia e solução de problemas. Em resumo, com o Python 3.10 ou mais novo instalado:
 
 ```bash
 python -m pip install "nanojud[pdf]"
@@ -308,8 +308,8 @@ Os resultados podem mudar, pois dependem de fontes externas atualizadas continua
 
 Consulte a demonstração completa em:
 
-* [Demonstração pública](docs/demonstracao-publica.md)
-* [Exemplos seguros](docs/exemplos-seguros.md)
+* [Demonstração pública](https://lucmolero.github.io/nanojud/demonstracao-publica/)
+* [Exemplos seguros](https://lucmolero.github.io/nanojud/exemplos-seguros/)
 
 ---
 
@@ -437,7 +437,7 @@ nanojud datajud 0032991-06.2012.8.19.0066 --out datajud.json
 nanojud extrato 0015020-23.2010.8.26.0053 --out extrato.json
 ```
 
-Se o terminal não reconhecer `nanojud`, use `python -m nanojud`. Consulte o [Guia da CLI](docs/cli.md) e o [Guia do advogado](docs/guia-do-advogado.md).
+Se o terminal não reconhecer `nanojud`, use `python -m nanojud`. Consulte o [Guia da CLI](https://lucmolero.github.io/nanojud/cli/) e o [Guia do advogado](https://lucmolero.github.io/nanojud/guia-do-advogado/).
 
 ---
 
@@ -492,10 +492,10 @@ print(resumo["classe"])
 
 Consulte:
 
-* [Cliente configurável](docs/client.md)
-* [API Reference](docs/api-reference.md)
-* [Contratos de dados](docs/contracts.md)
-* [Tratamento de erros](docs/errors.md)
+* [Cliente configurável](https://lucmolero.github.io/nanojud/client/)
+* [API Reference](https://lucmolero.github.io/nanojud/api-reference/)
+* [Contratos de dados](https://lucmolero.github.io/nanojud/contracts/)
+* [Tratamento de erros](https://lucmolero.github.io/nanojud/errors/)
 
 ---
 
@@ -555,8 +555,8 @@ Continuam fora do escopo:
 
 Consulte:
 
-* [MCP local](docs/mcp-local.md)
-* [Aprendizados MCP](docs/aprendizados-mcp.md)
+* [MCP local](https://lucmolero.github.io/nanojud/mcp-local/)
+* [Aprendizados MCP](https://lucmolero.github.io/nanojud/aprendizados-mcp/)
 
 ---
 
@@ -615,9 +615,9 @@ Principais módulos:
 
 Consulte a documentação completa:
 
-* [Arquitetura](docs/architecture.md)
-* [Metodologia](docs/metodologia.md)
-* [Reprodutibilidade](docs/reprodutibilidade.md)
+* [Arquitetura](https://lucmolero.github.io/nanojud/architecture/)
+* [Metodologia](https://lucmolero.github.io/nanojud/metodologia/)
+* [Reprodutibilidade](https://lucmolero.github.io/nanojud/reprodutibilidade/)
 
 ---
 
@@ -656,10 +656,10 @@ Os documentos restritos foram identificados como indisponíveis. Seu conteúdo n
 
 Consulte:
 
-* [Validação real](docs/validacao-real.md)
-* [Fixtures](docs/fixtures.md)
-* [Modelo de ameaças](docs/threat-model.md)
-* [Segurança](SECURITY.md)
+* [Validação real](https://lucmolero.github.io/nanojud/validacao-real/)
+* [Fixtures](https://lucmolero.github.io/nanojud/fixtures/)
+* [Modelo de ameaças](https://lucmolero.github.io/nanojud/threat-model/)
+* [Segurança](https://github.com/lucmolero/nanojud/blob/main/SECURITY.md)
 
 ---
 
@@ -707,10 +707,10 @@ Ao utilizar agentes de IA:
 
 Leia antes de usar o projeto em rotinas recorrentes:
 
-* [Uso responsável](docs/uso-responsavel.md)
-* [LGPD](docs/lgpd.md)
-* [Modelo de ameaças](docs/threat-model.md)
-* [Governança](docs/governanca.md)
+* [Uso responsável](https://lucmolero.github.io/nanojud/uso-responsavel/)
+* [LGPD](https://lucmolero.github.io/nanojud/lgpd/)
+* [Modelo de ameaças](https://lucmolero.github.io/nanojud/threat-model/)
+* [Governança](https://lucmolero.github.io/nanojud/governanca/)
 
 ---
 
@@ -744,9 +744,9 @@ Continuam em evolução:
 
 Acompanhe:
 
-* [SPECS.md](SPECS.md)
-* [CHANGELOG.md](CHANGELOG.md)
-* [Roadmap](docs/roadmap.md)
+* [SPECS.md](https://github.com/lucmolero/nanojud/blob/main/SPECS.md)
+* [CHANGELOG.md](https://github.com/lucmolero/nanojud/blob/main/CHANGELOG.md)
+* [Roadmap](https://lucmolero.github.io/nanojud/roadmap/)
 * [Releases](https://github.com/lucmolero/nanojud/releases)
 
 ---
@@ -804,9 +804,9 @@ python -m twine check dist/*
 
 Consulte:
 
-* [Contribuindo](CONTRIBUTING.md)
-* [Governança](docs/governanca.md)
-* [Segurança](SECURITY.md)
+* [Contribuindo](https://github.com/lucmolero/nanojud/blob/main/CONTRIBUTING.md)
+* [Governança](https://lucmolero.github.io/nanojud/governanca/)
+* [Segurança](https://github.com/lucmolero/nanojud/blob/main/SECURITY.md)
 
 ---
 
@@ -814,43 +814,43 @@ Consulte:
 
 ## Para começar
 
-* [Quickstart](docs/quickstart.md)
-* [Instalação com IA](docs/instalacao-com-ia.md)
-* [Para advogados](docs/para-advogados.md)
-* [Demonstração pública](docs/demonstracao-publica.md)
-* [Exemplos seguros](docs/exemplos-seguros.md)
+* [Quickstart](https://lucmolero.github.io/nanojud/quickstart/)
+* [Instalação com IA](https://lucmolero.github.io/nanojud/instalacao-com-ia/)
+* [Para advogados](https://lucmolero.github.io/nanojud/para-advogados/)
+* [Demonstração pública](https://lucmolero.github.io/nanojud/demonstracao-publica/)
+* [Exemplos seguros](https://lucmolero.github.io/nanojud/exemplos-seguros/)
 
 ## Para utilizar e integrar
 
-* [MCP local](docs/mcp-local.md)
-* [Aprendizados MCP](docs/aprendizados-mcp.md)
-* [Cliente configurável](docs/client.md)
-* [API Reference](docs/api-reference.md)
-* [Guia da CLI](docs/cli.md)
-* [Contratos de dados](docs/contracts.md)
-* [Erros](docs/errors.md)
+* [MCP local](https://lucmolero.github.io/nanojud/mcp-local/)
+* [Aprendizados MCP](https://lucmolero.github.io/nanojud/aprendizados-mcp/)
+* [Cliente configurável](https://lucmolero.github.io/nanojud/client/)
+* [API Reference](https://lucmolero.github.io/nanojud/api-reference/)
+* [Guia da CLI](https://lucmolero.github.io/nanojud/cli/)
+* [Contratos de dados](https://lucmolero.github.io/nanojud/contracts/)
+* [Erros](https://lucmolero.github.io/nanojud/errors/)
 
 ## Para entender o projeto
 
-* [Arquitetura](docs/architecture.md)
-* [Metodologia](docs/metodologia.md)
-* [Reprodutibilidade](docs/reprodutibilidade.md)
-* [Fixtures](docs/fixtures.md)
-* [Validação real](docs/validacao-real.md)
+* [Arquitetura](https://lucmolero.github.io/nanojud/architecture/)
+* [Metodologia](https://lucmolero.github.io/nanojud/metodologia/)
+* [Reprodutibilidade](https://lucmolero.github.io/nanojud/reprodutibilidade/)
+* [Fixtures](https://lucmolero.github.io/nanojud/fixtures/)
+* [Validação real](https://lucmolero.github.io/nanojud/validacao-real/)
 
 ## Segurança, governança e responsabilidade
 
-* [Uso responsável](docs/uso-responsavel.md)
-* [LGPD](docs/lgpd.md)
-* [Modelo de ameaças](docs/threat-model.md)
-* [Governança](docs/governanca.md)
-* [Segurança](SECURITY.md)
+* [Uso responsável](https://lucmolero.github.io/nanojud/uso-responsavel/)
+* [LGPD](https://lucmolero.github.io/nanojud/lgpd/)
+* [Modelo de ameaças](https://lucmolero.github.io/nanojud/threat-model/)
+* [Governança](https://lucmolero.github.io/nanojud/governanca/)
+* [Segurança](https://github.com/lucmolero/nanojud/blob/main/SECURITY.md)
 
 ## Evolução e contribuição
 
-* [Roadmap](docs/roadmap.md)
-* [Contribuindo](CONTRIBUTING.md)
-* [Changelog](CHANGELOG.md)
+* [Roadmap](https://lucmolero.github.io/nanojud/roadmap/)
+* [Contribuindo](https://github.com/lucmolero/nanojud/blob/main/CONTRIBUTING.md)
+* [Changelog](https://github.com/lucmolero/nanojud/blob/main/CHANGELOG.md)
 
 ---
 
@@ -858,7 +858,7 @@ Consulte:
 
 Para uso acadêmico, técnico ou institucional, utilize o arquivo:
 
-* [CITATION.cff](CITATION.cff)
+* [CITATION.cff](https://github.com/lucmolero/nanojud/blob/main/CITATION.cff)
 
 ---
 
@@ -868,7 +868,7 @@ Distribuído sob a licença MIT.
 
 Consulte:
 
-* [LICENSE](LICENSE)
+* [LICENSE](https://github.com/lucmolero/nanojud/blob/main/LICENSE)
 
 ---
 

@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+### Seguranca
+
+- Pisos de dependencia sem vulnerabilidades conhecidas (auditoria com `pip-audit`): `requests>=2.33.0`, `pypdf>=6.19.0,<7` e `mcp>=1.30.0,<2`. Os pisos anteriores (`requests>=2.28`, `pypdf>=5`, `mcp>=1.0`) permitiam versoes com dezenas de avisos de seguranca; instalacoes novas ja pegavam as versoes recentes, mas ambientes com versoes fixadas antigas nao.
+
+### Corrigido
+
+- `mcp>=1.0` estava errado: o servidor usa `FastMCP`, que so existe a partir do mcp 1.2. O novo piso resolve isso.
+- Links relativos do README (`docs/...`, `SECURITY.md` etc.) quebravam na pagina do projeto no PyPI; agora apontam para o site da documentacao e para o GitHub.
+
+### Adicionado
+
+- MCP: `consultar_datajud` aceita `compacto` (padrao `true`), que omite o `payload_origem` repetido de cada movimento; processos grandes passavam de 150 KB.
+
 ### Adicionado
 
 - CLI em portugues: ajuda, mensagens de uso e de erro em portugues; apelidos `consultar` (search), `linha-do-tempo` (timeline) e `extrair` (extract); opcoes `--fonte`, `--limite`, `--recentes-primeiro`, `--max-caracteres`, `--ajuda` e `--versao`. Os nomes em ingles continuam valendo.

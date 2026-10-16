@@ -46,7 +46,7 @@ Retorna envelope versionado com dados separados por fonte:
 ```json
 {
   "schema_version": "1.0",
-  "package_version": "0.4.0",
+  "package_version": "0.5.3",
   "status": "ok",
   "numero_cnj": "0015020-23.2010.8.26.0053",
   "sources": ["esaj", "datajud", "djen"],

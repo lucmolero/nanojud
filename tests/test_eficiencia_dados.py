@@ -381,3 +381,33 @@ def test_bloqueio_persistente_nao_vira_processo_nao_encontrado():
         esaj.carregar_pagina(sessao, TJSP, sleep=lambda _: None)
 
     assert sessao.buscas == esaj.TENTATIVAS_BLOQUEIO
+
+
+def test_compactar_datajud_remove_payload_original_e_mantem_os_dados():
+    extracao = {
+        "classe": "Usucapião",
+        "movimentos": [{"nome": "Sentença", "data": "2026-01-01", "payload_origem": {"x": 1}}],
+        "partes": [{"nome": "Ana", "payload_origem": {"y": 2}}],
+        "graus": [{"grau": "G1"}],
+    }
+
+    compacto = compactacao.compactar_datajud(extracao)
+
+    assert compacto["movimentos"] == [{"nome": "Sentença", "data": "2026-01-01"}]
+    assert compacto["partes"] == [{"nome": "Ana"}]
+    assert compacto["graus"] == [{"grau": "G1"}] and compacto["compacto"] is True
+    assert "payload_origem" in extracao["movimentos"][0]  # original intacto
+
+
+def test_mcp_consultar_datajud_e_compacto_por_padrao(monkeypatch):
+    monkeypatch.setattr(mcp_server, "FastMCP", _FastMCP)
+    monkeypatch.setattr(
+        mcp_server.api,
+        "consultar_datajud",
+        lambda numero, **kw: {"movimentos": [{"nome": "a", "payload_origem": {"x": 1}}]},
+    )
+    servidor = mcp_server.create_server()
+
+    assert "payload_origem" not in servidor.tools["consultar_datajud"](TJSP)["movimentos"][0]
+    completo = servidor.tools["consultar_datajud"](TJSP, compacto=False)
+    assert "payload_origem" in completo["movimentos"][0]
