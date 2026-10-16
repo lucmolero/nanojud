@@ -45,7 +45,7 @@ O `[pdf]` inclui o leitor de PDF, necessário para ler sentenças e decisões (s
 nanojud --versao
 ```
 
-Deve aparecer `nanojud 0.5.2` (ou mais novo).
+Deve aparecer `nanojud 0.5.3` (ou mais novo).
 
 > Se o terminal disser que `nanojud` não é reconhecido, use o mesmo comando por meio do Python: `python -m nanojud --versao`. Em todos os exemplos abaixo você pode trocar `nanojud` por `python -m nanojud`.
 >
