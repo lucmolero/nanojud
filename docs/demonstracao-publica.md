@@ -1,127 +1,24 @@
-# Demonstração Pública
+# Demonstração pública
 
-Esta página define o processo público recomendado para demonstrações do `nanojud`.
+Use o número CNJ `0015020-23.2010.8.26.0053` para conhecer a consulta do e-SAJ/TJSP e as demais fontes que responderem no momento do teste. Trata-se de um exemplo público. Os dados e a disponibilidade podem mudar; execute os comandos antes de mostrar qualquer resultado como atual.
 
-O objetivo é ter uma demo completa, rápida e responsável: suficiente para mostrar extração, normalização, DJEN, DataJud/CNJ, timeline e MCP local, sem usar disputa empresarial sensível como vitrine.
+## Roteiro
 
-## Processo recomendado
-
-```text
-0015020-23.2010.8.26.0053
-```
-
-Fonte principal: eSAJ/TJSP.
-
-Perfil do caso:
-
-- Classe: Mandado de Segurança Cível.
-- Assunto: Organização Político-administrativa / Administração Pública.
-- Foro: Foro Central - Fazenda Pública/Acidentes.
-- Vara: 7ª Vara de Fazenda Pública.
-- Partes institucionais: sindicato, autoridade fazendária e Fazenda Pública.
-- Valor da ação: R$ 510,00.
-
-## Por que usar este processo
-
-Este processo foi escolhido porque:
-
-- é público;
-- possui partes predominantemente institucionais;
-- evita disputa empresarial sensível;
-- retorna rápido no eSAJ;
-- possui comunicações no DJEN;
-- possui dados estruturados no DataJud/CNJ;
-- tem linha do tempo suficiente para demonstração;
-- mostra uma jornada real de conhecimento, execução/cumprimento e extinção.
-
-Validação manual por MCP local em 31/07/2026:
-
-| Fonte | Resultado |
-|---|---:|
-| eSAJ/TJSP | 246 movimentações |
-| DataJud/CNJ | 50 movimentos |
-| DJEN | 6 comunicações |
-| Timeline agregada | 302 eventos |
-| Erros da timeline | 0 |
-
-## Comandos de demonstração
-
-Consulta rápida:
+Com a candidata 0.6.0 instalada conforme o [quickstart](quickstart.md):
 
 ```bash
-nanojud search 0015020-23.2010.8.26.0053
-```
-
-Extrato público:
-
-```bash
+nanojud consultar 0015020-23.2010.8.26.0053
 nanojud extrato 0015020-23.2010.8.26.0053 --out extrato.json
+nanojud djen 0015020-23.2010.8.26.0053
+nanojud linha-do-tempo 0015020-23.2010.8.26.0053 --recentes-primeiro --limite 20
 ```
 
-DJEN:
+Anote a hora da consulta, as fontes que responderam, o grau, o estado de completude e os avisos. Se uma fonte estiver indisponível, apresente essa falha como parte do resultado. Não some movimentos e comunicações como se fossem registros equivalentes; eles podem descrever o mesmo evento.
 
-```bash
-nanojud djen 0015020-23.2010.8.26.0053 --out djen.json
-```
-
-DataJud/CNJ:
-
-```bash
-nanojud datajud 0015020-23.2010.8.26.0053 --out datajud.json
-```
-
-Timeline:
-
-```bash
-nanojud timeline 0015020-23.2010.8.26.0053 --source esaj --source djen --source datajud --out timeline.json
-```
-
-## Prompt MCP para demo
+## Demonstração com agente
 
 ```text
-Use o MCP local nanojud.
-Consulte o processo 0015020-23.2010.8.26.0053.
-Entregue dados básicos, fontes consultadas, últimos andamentos, DJEN, DataJud e uma timeline resumida.
-Separe fatos extraídos de inferências.
-Não dê aconselhamento jurídico.
+Consulte 0015020-23.2010.8.26.0053 com a NanoJud. Mostre uma tabela com data, tipo de registro, descrição curta, fonte e grau. Informe o estado e a hora da coleta por fonte, destaque divergências e diga quais conclusões exigem leitura das peças. Separe fatos extraídos de interpretações.
 ```
 
-## Briefing demonstrativo
-
-Com base nos dados públicos extraídos pelo MCP local, o caso pode ser apresentado assim:
-
-> Mandado de Segurança Cível proposto por sindicato relacionado à Administração Pública estadual. O processo evoluiu para fase de execução/cumprimento, com incidentes de Requisição de Pequeno Valor. O andamento mais relevante recente indica extinção da execução/cumprimento pela satisfação da obrigação, com fundamento no art. 924, II, do CPC. Para análise de mérito, é necessário consultar as peças e decisões principais.
-
-## Perguntas que a demo responde bem
-
-- Qual é o tipo de processo?
-- Quem são as partes públicas/institucionais?
-- Qual é a fase observável?
-- Qual foi o último ato relevante?
-- Há publicações recentes no DJEN?
-- Há eventos no DataJud/CNJ?
-- Existem incidentes de RPV?
-- A timeline agrega eventos de mais de uma fonte?
-- Quais dados exigem conferência na fonte oficial?
-
-## O que não afirmar na demo
-
-Evite afirmar:
-
-- tese jurídica material completa;
-- resultado estratégico;
-- prazo processual em curso sem conferência oficial;
-- conclusão sobre direito líquido e certo;
-- parecer jurídico sem leitura das peças.
-
-A demonstração mostra extração e organização de dados públicos. A análise jurídica permanece com o profissional.
-
-## Cuidados de exposição
-
-Para vídeos, posts e apresentações:
-
-- mostre dados agregados e trechos curtos;
-- oculte nomes de advogados quando não forem necessários;
-- não exponha documentos integrais;
-- não use dados de terceiros como material promocional sem contexto;
-- destaque que o projeto é independente e não oficial.
+Uma demonstração responsável mostra como conferir o resultado no portal de origem. Evite reproduzir documentos integrais ou dados pessoais desnecessários em apresentações públicas. Consulte a [matriz de fontes](fontes.md) para entender o alcance de cada integração.

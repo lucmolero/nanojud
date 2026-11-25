@@ -1,0 +1,625 @@
+[
+  {
+    "id": "esaj_1g_public_demo",
+    "numero": "0015020-23.2010.8.26.0053",
+    "fonte": "esaj",
+    "grau": "1G",
+    "cenario": "processo_institucional_de_demonstracao_publica",
+    "estado": "observado",
+    "evidencia": "Consulta do checkout em 2026-11-13: CNJ idêntico e 20 movimentações retornadas pelo e-SAJ/TJSP; revalidar histórico completo separadamente.",
+    "observado_em": "2026-11-13"
+  },
+  {
+    "id": "esaj_1g_longo",
+    "numero": "1076539-20.2019.8.26.0100",
+    "fonte": "esaj",
+    "grau": "1G",
+    "cenario": "historico_longo_documentos_mistos",
+    "estado": "observado",
+    "evidencia": "Auditoria histórica em reports/arquivo/auditoria-sol-e-plano-de-validacao.md:509. Revalidação do checkout em 2026-11-13: CNJ/TJSP/1G confirmado; status partial, 100 movimentos e incompletos por limite, 13 documentos públicos candidatos, 6 restritos; uma peça pública listada foi lida em memória na mesma sessão (28.044 bytes, MIME PDF), sem persistir ou imprimir conteúdo.",
+    "observado_em": "2026-11-11"
+  },
+  {
+    "id": "esaj_1g_documentos",
+    "numero": "1002159-28.2023.8.26.0248",
+    "fonte": "esaj",
+    "grau": "1G",
+    "cenario": "documentos_publicos_e_restritos",
+    "estado": "observado",
+    "evidencia": "reports/arquivo/auditoria-sol-e-plano-de-validacao.md:22",
+    "observado_em": "2026-11-12"
+  },
+  {
+    "id": "esaj_1g_decisao_publicada",
+    "numero": "1000876-57.2018.8.26.0696",
+    "fonte": "esaj",
+    "grau": "1G",
+    "cenario": "processo_citado_em_decisao_publicada",
+    "estado": "observado",
+    "evidencia": "consulta MCP NanoJud Demo em 2026-11-12: status ok, CNJ idêntico, origem TJSP/CPoPG/1G; CNJ localizado em decisão pública",
+    "observado_em": "2026-11-12"
+  },
+  {
+    "id": "esaj_1g_migracao",
+    "numero": "1001194-30.2024.8.26.0114",
+    "fonte": "esaj",
+    "grau": "1G",
+    "cenario": "aviso_migracao_eproc",
+    "estado": "observado",
+    "evidencia": "https://esaj.tjsp.jus.br/cpopg/show.do?processo.codigo=360013VZK0000&processo.foro=114&processo.numero=1001194-30.2024.8.26.0114",
+    "observado_em": "2026-11-12"
+  },
+  {
+    "id": "esaj_1g_recurso_2g_nao_localizado",
+    "numero": "2034550-16.2025.8.26.0000",
+    "fonte": "esaj",
+    "grau": "1G",
+    "cenario": "recurso_2g_confirmado_no_cposg_nao_localizado_no_cpopg_1g",
+    "estado": "nao_encontrado",
+    "evidencia": "A consulta CPoSG/e-SAJ 2G confirma este CNJ como recurso próprio em amostra observada. Na consulta de 13/11/2026 ao envelope Python com sources=(esaj,), timeout=12, prazo_total=20 e limite_movimentacoes=1, o CPoPG/TJSP retornou source_status=error e type=ProcessoNaoEncontrado. O resultado é limitado à instalação 1G; não afirma inexistência no tribunal nem afeta a prova positiva no CPoSG.",
+    "observado_em": "2026-11-13"
+  },
+  {
+    "id": "esaj_2g_agravo",
+    "numero": "2034550-16.2025.8.26.0000",
+    "fonte": "esaj_tjsp_2g",
+    "grau": "2G",
+    "cenario": "agravo_de_instrumento_com_movimentos_e_peca_publica",
+    "identidades_resultado_confirmadas": [
+      "2034550-16.2025.8.26.0000"
+    ],
+    "estado": "observado",
+    "metadados_capa": {
+      "classe": "Agravo de Instrumento",
+      "orgao_julgador": "19ª Câmara de Direito Privado",
+      "vara": "",
+      "observado_em": "2026-11-13"
+    },
+    "evidencia": "No wheel 0.6.0, revalidação em 2026-11-13 confirmou o CNJ próprio, movimentos completos e PDF individual público obtido pelo cd_documento do movimento; 281488 bytes, assinatura PDF válida, sem persistir arquivo nem imprimir conteúdo. Consulta do checkout em 2026-11-13 com max_paginas=1 confirmou na capa a classe Agravo de Instrumento, 19ª Câmara de Direito Privado e seção Direito Privado 2; status partial e movimentos incompletos decorrem do limite explícito de uma página.",
+    "observado_em": "2026-11-13"
+  },
+  {
+    "id": "esaj_2g_acervo",
+    "numero": "2001772-37.2018.8.26.0000",
+    "fonte": "esaj_tjsp_2g",
+    "grau": "2G",
+    "cenario": "recurso_de_segundo_grau_com_peca_publica",
+    "identidades_resultado_confirmadas": [
+      "2001772-37.2018.8.26.0000"
+    ],
+    "estado": "observado",
+    "metadados_capa": {
+      "classe": "Agravo de Instrumento",
+      "orgao_julgador": "1ª Câmara de Direito Público",
+      "vara": "",
+      "observado_em": "2026-11-13"
+    },
+    "evidencia": "Relatório local de 2026-11-12 confirma peça pública; revalidação do checkout em 2026-11-13 confirmou CNJ próprio e movimentos, parcialidade preservada com limite curto. Consulta do checkout em 2026-11-13 com max_paginas=1 confirmou na capa a classe Agravo de Instrumento, 1ª Câmara de Direito Público e seção Direito Público; status partial e movimentos incompletos decorrem do limite explícito de uma página.",
+    "observado_em": "2026-11-13"
+  },
+  {
+    "id": "esaj_2g_vinculos",
+    "numero": "0040759-80.2012.8.26.0100",
+    "fonte": "esaj_tjsp_2g",
+    "grau": "2G",
+    "cenario": "busca_retorna_recursos_com_cnj_proprio",
+    "identidades_resultado_confirmadas": [
+      "2049567-73.2017.8.26.0000"
+    ],
+    "estado": "observado",
+    "evidencia": "reports/arquivo/auditoria-sol-e-plano-de-validacao.md:1146,1154",
+    "observado_em": "2026-11-12"
+  },
+  {
+    "id": "esaj_2g_conflito",
+    "numero": "0004541-08.2025.8.26.0000",
+    "fonte": "esaj_tjsp_2g",
+    "grau": "2G",
+    "cenario": "capa_paginacao_e_peca_vinculada",
+    "identidades_resultado_confirmadas": [
+      "0004541-08.2025.8.26.0000"
+    ],
+    "estado": "observado",
+    "metadados_capa": {
+      "classe": "Conflito de competência cível",
+      "orgao_julgador": "Câmara Especial",
+      "vara": "",
+      "observado_em": "2026-11-13"
+    },
+    "evidencia": "reports/arquivo/auditoria-sol-e-plano-de-validacao.md:1160. Wheel 0.6.0 em 2026-11-13 retornou o CNJ próprio e quatro vínculos documentais; um PDF ligado ao resultado próprio foi obtido (220.515 bytes, assinatura válida). A consulta foi limitada a duas páginas e marcou movimentos como incompletos/partial. O arquivo não foi salvo nem seu conteúdo impresso; isso não comprova autos completos. Consulta do checkout em 2026-11-13 com max_paginas=1 confirmou na capa a classe Conflito de competência cível, Câmara Especial e seção Órgão e Câmara Especial; status partial e movimentos incompletos decorrem do limite explícito de uma página.",
+    "observado_em": "2026-11-13"
+  },
+  {
+    "id": "esaj_2g_outro_conflito",
+    "numero": "0011226-31.2025.8.26.0000",
+    "fonte": "esaj_tjsp_2g",
+    "grau": "2G",
+    "cenario": "outro_recurso_e_pdf_publico",
+    "identidades_resultado_confirmadas": [
+      "0011226-31.2025.8.26.0000"
+    ],
+    "estado": "observado",
+    "metadados_capa": {
+      "classe": "Conflito de competência cível",
+      "orgao_julgador": "Câmara Especial",
+      "vara": "",
+      "observado_em": "2026-11-13"
+    },
+    "evidencia": "reports/arquivo/auditoria-sol-e-plano-de-validacao.md:1160,1179. Consulta do checkout em 2026-11-13 com max_paginas=1 confirmou na capa o CNJ próprio, a classe Conflito de competência cível, Câmara Especial e seção Órgão e Câmara Especial; status partial e movimentos incompletos decorrem do limite explícito de uma página.",
+    "observado_em": "2026-11-12"
+  },
+  {
+    "id": "pje_tjmg_1g_paginacao",
+    "numero": "5060583-19.2021.8.13.0024",
+    "fonte": "pje_tjmg",
+    "grau": "1G",
+    "cenario": "muitos_movimentos_e_documentos_com_paginacao_dupla",
+    "resultado_esperado": "movimentacoes_documentos_multiplas_paginas",
+    "estado": "observado",
+    "evidencia": "Consulta live do checkout local em 2026-11-12 e revalidação em 2026-11-13: CNJ/TJMG/1G confirmado, identidade, movimentos e documentos completos; 319 movimentos em 22 páginas e 20 documentos únicos em 2 páginas na observação detalhada. Histórico anterior em reports/arquivo/auditoria-sol-e-plano-de-validacao.md:495",
+    "observado_em": "2026-11-13",
+    "metadados_capa": {
+      "classe": "[CÍVEL] PROCEDIMENTO COMUM CÍVEL (7)",
+      "orgao_julgador": "Núcleo de Justiça 4.0 - Fazenda Pública",
+      "vara": "",
+      "observado_em": "2026-11-13"
+    }
+  },
+  {
+    "id": "pje_tjmg_material_capacitacao",
+    "numero": "6000890-97.2015.8.13.0024",
+    "fonte": "pje_tjmg",
+    "grau": "1G",
+    "cenario": "caso_material_oficial_28_movimentos_documentos_listados",
+    "estado": "observado",
+    "evidencia": "API local consultar_processo em 2026-11-12 e revalidação em 2026-11-13: CNJ/TJMG/1º grau confirmados, movimentos e documentos completos; na observação inicial, 28 movimentos e 2 documentos listados coincidiram com o resumo explícito do portal",
+    "observado_em": "2026-11-13",
+    "resultado_esperado": "movimentacoes_documentos_completos",
+    "metadados_capa": {
+      "classe": "[CÍVEL] PROCEDIMENTO COMUM CÍVEL (7)",
+      "orgao_julgador": "27ª Vara Cível da Comarca de Belo Horizonte",
+      "vara": "",
+      "observado_em": "2026-11-13"
+    }
+  },
+  {
+    "id": "pje_tjmg_uberlandia_documentos_completos",
+    "numero": "0089724-21.2014.8.13.0702",
+    "fonte": "pje_tjmg",
+    "grau": "1G",
+    "cenario": "coorte_datajud_djen_documentos_parciais",
+    "resultado_esperado": "movimentacoes_documentos_completos",
+    "estado": "observado",
+    "evidencia": "API local consultar_processo em 2026-11-12 e revalidação em 2026-11-13: CNJ/TJMG/1º grau confirmados, movimentos e documentos completos; o resumo explícito “4 resultados encontrados” bateu com as 4 linhas da tabela na observação inicial; um PDF público de 71.744 bytes foi lido e confirmou o mesmo CNJ. Revalidação adicional em 2026-11-13: uma peça listada foi obtida pela API de baixo nível usando a mesma sessão da consulta; 71.744 bytes, assinatura PDF válida, sem salvar nem imprimir conteúdo. A tentativa com sessão nova falhou porque o portal não ofereceu o botão PDF nessa URL temporária.",
+    "observado_em": "2026-11-13",
+    "metadados_capa": {
+      "classe": "[CÍVEL] PROCEDIMENTO COMUM CÍVEL (7)",
+      "orgao_julgador": "1ª Vara Cível da Comarca de Uberlândia",
+      "vara": "",
+      "observado_em": "2026-11-13"
+    }
+  },
+  {
+    "id": "pje_tjmg_carta_precatoria_completa",
+    "numero": "5001232-88.2025.8.13.0408",
+    "fonte": "pje_tjmg",
+    "grau": "1G",
+    "cenario": "carta_precatoria_com_paginacao_completa_em_comarca_distinta",
+    "resultado_esperado": "movimentacoes_documentos_completos",
+    "estado": "observado",
+    "evidencia": "API local consultar_processo em 2026-11-12 e revalidação em 2026-11-13: CNJ/TJMG/1º grau confirmados, movimentos e documentos completos. CNJ também consta em anúncio público de leilão judicial do TJMG: https://exchange.superbid.net/oferta/tanques-fermentador-maturador-com-capacidade-de-36h-l-4957184",
+    "observado_em": "2026-11-13",
+    "metadados_capa": {
+      "classe": "[CÍVEL] CARTA PRECATÓRIA CÍVEL (261)",
+      "orgao_julgador": "Vara Única da Comarca de Matias Barbosa",
+      "vara": "",
+      "observado_em": "2026-11-13"
+    }
+  },
+  {
+    "id": "pje_tjmg_uberlandia_108vara_5paginas",
+    "numero": "5036565-97.2022.8.13.0702",
+    "fonte": "pje_tjmg",
+    "grau": "1G",
+    "cenario": "procedimento_comum_uberlandia_108vara_com_historico_paginado",
+    "resultado_esperado": "movimentacoes_documentos_completos",
+    "estado": "observado",
+    "evidencia": "Consulta do checkout local em 2026-11-12 e revalidação em 2026-11-13: identidade CNJ/TJMG/1G confirmada, movimentos e documentos completos; 71 movimentos em 5 páginas e 1 documento em 1 página na observação detalhada. O processo consta em documento público da EMGEA: https://www.emgea.gov.br/LicitacaoContrato/Documento/166780?IdAquisicao=2133&IdEstadoAquisicao=0",
+    "observado_em": "2026-11-13",
+    "metadados_capa": {
+      "classe": "[CÍVEL] PROCEDIMENTO COMUM CÍVEL (7)",
+      "orgao_julgador": "10ª Vara Cível da Comarca de Uberlândia",
+      "vara": "",
+      "observado_em": "2026-11-13"
+    }
+  },
+  {
+    "id": "pje_tjmg_caso_documentado_sem_detalhe_publico",
+    "numero": "5087890-21.2016.8.13.0024",
+    "fonte": "pje_tjmg",
+    "grau": "1G",
+    "cenario": "cnj_em_documento_institucional_sem_detalhe_no_pje_publico",
+    "estado": "nao_encontrado",
+    "evidencia": "[Repositório institucional TJMG](https://bd.tjmg.jus.br/server/api/core/bitstreams/96877655-9680-4144-ade1-b4735bf53cfc/content) confirma o CNJ; API local do PJe/TJMG em 2026-11-12 retornou ProcessoNaoEncontrado sem link de detalhe público; não conta como amostra positiva",
+    "observado_em": "2026-11-12"
+  },
+  {
+    "id": "datajud_sp_demo",
+    "numero": "0015020-23.2010.8.26.0053",
+    "fonte": "datajud",
+    "grau": "variavel",
+    "cenario": "metadados_e_graus",
+    "estado": "historico",
+    "evidencia": "tests/test_live_datajud_djen.py:14",
+    "observado_em": "2026-07-31"
+  },
+  {
+    "id": "datajud_sp_incidente",
+    "numero": "1076539-20.2019.8.26.0100",
+    "fonte": "datajud",
+    "grau": "variavel",
+    "cenario": "mesmo_cnj_resultado_divergente_do_esaj",
+    "estado": "historico",
+    "evidencia": "README.md:307",
+    "observado_em": "2026-07-31"
+  },
+  {
+    "id": "datajud_mg_descoberta",
+    "numero": "5060583-19.2021.8.13.0024",
+    "fonte": "datajud",
+    "grau": "variavel",
+    "cenario": "comparacao_entre_tribunais",
+    "estado": "candidato",
+    "evidencia": "reports/arquivo/auditoria-sol-e-plano-de-validacao.md:495",
+    "observado_em": null
+  },
+  {
+    "id": "datajud_mg_capacitacao",
+    "numero": "6000890-97.2015.8.13.0024",
+    "fonte": "datajud",
+    "grau": "G1",
+    "cenario": "caso_citado_em_material_oficial_de_capacitacao_pje",
+    "estado": "observado",
+    "evidencia": "MCP NanoJud Demo consultar_datajud, 2026-11-12; retorno estruturado confirmou CNJ, TJMG, G1 e 28 movimentos",
+    "observado_em": "2026-11-12"
+  },
+  {
+    "id": "datajud_mg_uberlandia",
+    "numero": "0089724-21.2014.8.13.0702",
+    "fonte": "datajud",
+    "grau": "G1",
+    "cenario": "caso_publicado_em_relatorio_judicial_tjmg",
+    "estado": "observado",
+    "evidencia": "MCP NanoJud Demo consultar_datajud, 2026-11-12; retorno estruturado confirmou CNJ idêntico, TJMG e G1; a chamada direta local posterior terminou em timeout",
+    "observado_em": "2026-11-12"
+  },
+  {
+    "id": "datajud_rj_sem_registro_publicado",
+    "numero": "0032991-06.2012.8.19.0066",
+    "fonte": "datajud",
+    "grau": "variavel",
+    "cenario": "processo_confirmado_no_tjrj_sem_registro_no_indice_datajud",
+    "estado": "nao_encontrado",
+    "evidencia": "MCP NanoJud Demo consultar_datajud em 2026-11-12 retornou explicitamente status=nao_encontrado e índice TJRJ; o adaptador TJRJ 1G confirmou independentemente o mesmo CNJ e 226 movimentos expandidos. Tentativa anterior pelo cliente deste checkout terminou em ReadTimeout. Ausência limitada ao índice DataJud consultado, não ao processo nem ao TJRJ",
+    "observado_em": "2026-11-12"
+  },
+  {
+    "id": "djen_sp_demo",
+    "numero": "0015020-23.2010.8.26.0053",
+    "fonte": "djen",
+    "grau": "nao_se_aplica",
+    "cenario": "publicacoes_nacionais",
+    "estado": "observado",
+    "evidencia": "Consulta live do checkout em 2026-11-12: CNJ/TJSP confirmado, 8 comunicações. Revalidação em 2026-11-13: resposta completa em uma página; as oito comunicações vieram com status=P e ativo presente, sem data/motivo de cancelamento",
+    "observado_em": "2026-11-13"
+  },
+  {
+    "id": "djen_sp_longo",
+    "numero": "1076539-20.2019.8.26.0100",
+    "fonte": "djen",
+    "grau": "nao_se_aplica",
+    "cenario": "publicacoes_de_processo_com_historico_longo",
+    "estado": "observado",
+    "evidencia": "consulta_live_2026-11-12:12_comunicacoes",
+    "observado_em": "2026-11-12"
+  },
+  {
+    "id": "djen_mg",
+    "numero": "5060583-19.2021.8.13.0024",
+    "fonte": "djen",
+    "grau": "nao_se_aplica",
+    "cenario": "publicacoes_de_outro_tribunal",
+    "estado": "observado",
+    "evidencia": "Consulta live 2026-11-12: 8 comunicações. Revalidação pelo wheel 0.6.0 em 2026-11-13: CNJ confirmado, 8 comunicações completas em uma página; nenhum conteúdo de comunicação copiado. Teste live do checkout também confirmou CNJ, sigla TJMG e completude. Reconsulta em 2026-11-13: oito itens com status=P e ativo presente, sem campos de cancelamento",
+    "observado_em": "2026-11-13"
+  },
+  {
+    "id": "djen_mg_uberlandia",
+    "numero": "0089724-21.2014.8.13.0702",
+    "fonte": "djen",
+    "grau": "nao_se_aplica",
+    "cenario": "publicacoes_tjmg_de_caso_identificado_no_datajud",
+    "estado": "observado",
+    "evidencia": "MCP NanoJud Demo consultar_djen em 2026-11-12: 4 comunicações; CNJ idêntico e sigla TJMG em todas. Revalidação pelo wheel 0.6.0 em 2026-11-13: 4 comunicações completas em uma página, identidade CNJ confirmada. Revalidação do checkout em 2026-11-13: teste live confirmou CNJ, sigla TJMG e completude",
+    "observado_em": "2026-11-13"
+  },
+  {
+    "id": "djen_sp_migracao",
+    "numero": "1001194-30.2024.8.26.0114",
+    "fonte": "djen",
+    "grau": "nao_se_aplica",
+    "cenario": "publicacoes_de_processo_migrado",
+    "estado": "observado",
+    "evidencia": "Consulta live 2026-11-12: 5 comunicações. Revalidação pelo wheel 0.6.0 em 2026-11-13: CNJ confirmado, 5 comunicações completas em uma página; nenhum conteúdo de comunicação copiado",
+    "observado_em": "2026-11-13"
+  },
+  {
+    "id": "djen_rj_terceiro_tribunal",
+    "numero": "0032991-06.2012.8.19.0066",
+    "fonte": "djen",
+    "grau": "nao_se_aplica",
+    "cenario": "publicacao_confirmada_em_terceiro_tribunal",
+    "estado": "observado",
+    "evidencia": "MCP NanoJud Demo e checkout local em 2026-11-12: uma comunicação DJEN com sigla TJRJ e CNJ idêntico. Revalidação pelo wheel 0.6.0 em 2026-11-13: identidade CNJ confirmada, uma comunicação completa em uma página",
+    "observado_em": "2026-11-13"
+  },
+  {
+    "id": "tjrj_1g_movimentos_completos",
+    "numero": "0032991-06.2012.8.19.0066",
+    "fonte": "tjrj_1g",
+    "grau": "1G",
+    "cenario": "origem_publica_com_historico_completo",
+    "estado": "observado",
+    "evidencia": "API local consultar_tjrj_1g em 2026-11-12: CNJ/TJRJ/1G confirmados, 226 eventos de movimento expandidos, movimentacoes_completas=true, 1 página; nenhum documento validado Revalidação opt-in do checkout em 2026-11-13: incluído em test_live_tjrj_1g_confere_identidade_e_completude_de_movimentos (7/7 passed); CNJ, TJRJ/1G, movimentos e movimentacoes_completas=true confirmados. Isso não valida peças/documentos.",
+    "observado_em": "2026-11-13"
+  },
+  {
+    "id": "tjrj_1g_numero_antigo_manual",
+    "numero": "0000328-97.2015.8.19.0001",
+    "fonte": "tjrj_1g",
+    "grau": "1G",
+    "cenario": "cnj_derivado_de_numero_antigo_em_manual_oficial_confirmado_na_api_publica",
+    "estado": "observado",
+    "evidencia": "[Manual oficial TJRJ](https://portaltj.tjrj.jus.br/documents/10136/54109/serven-locais-virtu-distri-processu-portal-servi%C3%A7os.pdf) exibe o número antigo 2015.001.000328-0; CNJ calculado e depois confirmado pela SPA/API pública deste checkout em 2026-11-12: CNJ idêntico, TJRJ/1G, 74 eventos de movimento expandidos, todosMovimentos=true; sem dados de partes copiados Revalidação opt-in do checkout em 2026-11-13: incluído em test_live_tjrj_1g_confere_identidade_e_completude_de_movimentos (7/7 passed); CNJ, TJRJ/1G, movimentos e movimentacoes_completas=true confirmados. Isso não valida peças/documentos.",
+    "observado_em": "2026-11-13"
+  },
+  {
+    "id": "djen_tjrj_caso_cross_source",
+    "numero": "0184264-47.2023.8.19.0001",
+    "fonte": "djen",
+    "grau": "nao_se_aplica",
+    "cenario": "caso_tjrj_confirmado_independentemente_no_portal_e_no_djen",
+    "estado": "observado",
+    "evidencia": "Checkout local: DJEN retornou 9 comunicações com CNJ idêntico e sigla TJRJ em 2026-11-12; adaptador TJRJ 1G confirmou separadamente o mesmo CNJ e 76 eventos de movimento expandidos completos. Reconsulta DJEN em 2026-11-13: resposta completa em uma página; nove itens com status=P e ativo presente, sem campos de cancelamento",
+    "observado_em": "2026-11-13"
+  },
+  {
+    "id": "djen_tjrj_2g_agravo_confirmado",
+    "numero": "0025949-50.2025.8.19.0000",
+    "fonte": "djen",
+    "grau": "nao_se_aplica",
+    "cenario": "comunicacoes_de_recurso_tjrj_2g_confirmado_em_acordao_oficial",
+    "estado": "observado",
+    "evidencia": "Acórdão oficial do TJRJ confirma o CNJ como Agravo de Instrumento de 2G (julgado em 10/06/2025). Consulta ao DJEN pelo checkout em 13/11/2026: status=ok, 4 comunicações, CNJ exato em todas, uma página completa, sem avisos; nenhum conteúdo de comunicação ou dado de parte copiado.",
+    "observado_em": "2026-11-13"
+  },
+  {
+    "id": "djen_tjba_2g_recurso_confirmado",
+    "numero": "8008677-62.2023.8.05.0000",
+    "fonte": "djen",
+    "grau": "nao_se_aplica",
+    "cenario": "comunicacoes_tjba_recurso_de_2g_confirmado_em_diario_oficial",
+    "estado": "observado",
+    "evidencia": "Diário da Justiça Eletrônico oficial do TJBA identifica o processo como Embargos de Declaração Cível (2G). Consulta ao DJEN pelo checkout em 13/11/2026: com page_size=100, status=ok, 10 comunicações, CNJ exato e siglaTribunal=TJBA em todos os itens, uma página completa e sem avisos; não foram copiados partes ou textos.",
+    "observado_em": "2026-11-13"
+  },
+  {
+    "id": "djen_tjpr_2g_agravo_confirmado",
+    "numero": "0065491-59.2025.8.16.0000",
+    "fonte": "djen",
+    "grau": "nao_se_aplica",
+    "cenario": "comunicacoes_tjpr_recurso_de_2g_confirmado_em_acordao_oficial",
+    "estado": "observado",
+    "evidencia": "Acórdão da base oficial do TJPR identifica o processo como agravo de instrumento de 2G. Consulta ao DJEN pelo checkout em 13/11/2026: page_size=100, status=ok, 15 comunicações, CNJ exato e siglaTribunal=TJPR em todos os itens, uma página completa e sem avisos; sem dados de parte ou textos copiados.",
+    "observado_em": "2026-11-13"
+  },
+  {
+    "id": "djen_trf3_2g_agravo_confirmado",
+    "numero": "5011712-03.2025.4.03.0000",
+    "fonte": "djen",
+    "grau": "nao_se_aplica",
+    "cenario": "comunicacoes_trf3_recurso_2g_confirmado_em_acordao_oficial",
+    "estado": "observado",
+    "evidencia": "Acórdão oficial do TRF3 identifica o CNJ como Agravo de Instrumento 202 (3ª Turma). Consulta ao DJEN pelo checkout em 13/11/2026: status=ok, 6 comunicações, CNJ exato e siglaTribunal=TRF3 em todos os itens, uma página completa e sem avisos; nenhum texto ou dado de parte foi copiado.",
+    "observado_em": "2026-11-13"
+  },
+  {
+    "id": "djen_trf4_2g_agravo_confirmado",
+    "numero": "5022194-80.2025.4.04.0000",
+    "fonte": "djen",
+    "grau": "nao_se_aplica",
+    "cenario": "comunicacoes_trf4_recurso_2g_confirmado_em_acordao_oficial",
+    "estado": "observado",
+    "evidencia": "Acórdão oficial do TRF4 identifica o CNJ como Agravo de Instrumento 202 da 9ª Turma. Consulta ao DJEN pelo checkout em 13/11/2026: status=ok, 3 comunicações, CNJ exato e siglaTribunal=TRF4 em todos os itens, uma página completa e sem avisos; nenhum texto ou dado de parte foi copiado.",
+    "observado_em": "2026-11-13"
+  },
+  {
+    "id": "djen_tjrj_confirmado_sem_publicacao",
+    "numero": "0000328-97.2015.8.19.0001",
+    "fonte": "djen",
+    "grau": "nao_se_aplica",
+    "cenario": "processo_confirmado_no_tjrj_sem_publicacao_no_escopo_djen",
+    "resultado_esperado": "zero_ou_comunicacoes_futuras_com_identidade_confirmada",
+    "estado": "observado",
+    "evidencia": "Consulta live DJEN do checkout em 2026-11-13: resposta completa, primeira página vazia; CNJ confirmado separadamente na API pública TJRJ (1G) em 2026-11-12. Ausência limitada ao escopo consultado do DJEN; sem dados de partes copiados",
+    "observado_em": "2026-11-13"
+  },
+  {
+    "id": "djen_pje_tjmg_material_oficial_sem_publicacao",
+    "numero": "6000890-97.2015.8.13.0024",
+    "fonte": "djen",
+    "grau": "nao_se_aplica",
+    "cenario": "processo_confirmado_no_pje_tjmg_sem_comunicacao_djen",
+    "resultado_esperado": "zero_ou_comunicacoes_futuras_com_identidade_confirmada",
+    "estado": "observado",
+    "evidencia": "Consulta live pelo wheel 0.6.0 em 2026-11-13: resposta DJEN completa e vazia. CNJ/TJMG/1G confirmado separadamente pelo PJe/TJMG; ausência limitada ao escopo DJEN",
+    "observado_em": "2026-11-13"
+  },
+  {
+    "id": "djen_pje_tjmg_carta_precatoria",
+    "numero": "5001232-88.2025.8.13.0408",
+    "fonte": "djen",
+    "grau": "nao_se_aplica",
+    "cenario": "carta_precatoria_tjmg_com_duas_comunicacoes",
+    "estado": "observado",
+    "evidencia": "Consulta live pelo wheel 0.6.0 em 2026-11-13: duas comunicações completas em uma página e identidade CNJ confirmada; processo confirmado separadamente no PJe/TJMG",
+    "observado_em": "2026-11-13"
+  },
+  {
+    "id": "djen_pje_tjmg_uberlandia_sem_publicacao",
+    "numero": "5036565-97.2022.8.13.0702",
+    "fonte": "djen",
+    "grau": "nao_se_aplica",
+    "cenario": "processo_confirmado_no_pje_tjmg_sem_comunicacao_djen",
+    "resultado_esperado": "zero_ou_comunicacoes_futuras_com_identidade_confirmada",
+    "estado": "observado",
+    "evidencia": "Consulta live pelo wheel 0.6.0 em 2026-11-13: resposta DJEN completa e vazia. CNJ/TJMG/1G confirmado separadamente pelo PJe/TJMG; ausência limitada ao escopo DJEN",
+    "observado_em": "2026-11-13"
+  },
+  {
+    "id": "djen_esaj_tjsp_documentos_sem_publicacao",
+    "numero": "1002159-28.2023.8.26.0248",
+    "fonte": "djen",
+    "grau": "nao_se_aplica",
+    "cenario": "processo_confirmado_no_esaj_tjsp_sem_comunicacao_djen",
+    "resultado_esperado": "zero_ou_comunicacoes_futuras_com_identidade_confirmada",
+    "estado": "observado",
+    "evidencia": "Consulta live pelo wheel 0.6.0 em 2026-11-13: resposta DJEN completa e vazia. CNJ/TJSP/1G confirmado separadamente pelo e-SAJ; ausência limitada ao escopo DJEN",
+    "observado_em": "2026-11-13"
+  },
+  {
+    "id": "djen_esaj_tjsp_2g_agravo_sem_publicacao",
+    "numero": "2034550-16.2025.8.26.0000",
+    "fonte": "djen",
+    "grau": "nao_se_aplica",
+    "cenario": "recurso_confirmado_no_esaj_tjsp_sem_comunicacao_djen",
+    "resultado_esperado": "zero_ou_comunicacoes_futuras_com_identidade_confirmada",
+    "estado": "observado",
+    "evidencia": "Consulta live pelo wheel 0.6.0 em 2026-11-13: resposta DJEN completa e vazia. CNJ próprio/TJSP/2G confirmado separadamente pelo e-SAJ CPoSG; ausência limitada ao escopo DJEN",
+    "observado_em": "2026-11-13"
+  },
+  {
+    "id": "djen_tjsp_2g_recurso_candidato_nao_confirmado",
+    "numero": "2049567-73.2017.8.26.0000",
+    "fonte": "djen",
+    "grau": "nao_se_aplica",
+    "cenario": "numero_de_recurso_vinculado_sem_confirmacao_direta",
+    "resultado_esperado": "zero_ou_comunicacoes_futuras_com_identidade_confirmada",
+    "estado": "candidato",
+    "evidencia": "O número apareceu como recurso vinculado em consulta CPoSG do processo 0040759-80.2012.8.26.0100, mas a consulta direta CPoSG deste checkout terminou em ConsultaInconclusiva. O DJEN retornou resposta completa vazia pelo wheel 0.6.0; sem confirmação independente do CNJ próprio, permanece candidato e não conta como observação negativa do DJEN",
+    "observado_em": null
+  },
+  {
+    "id": "tjrj_1g_decisao_2023",
+    "numero": "0184264-47.2023.8.19.0001",
+    "fonte": "tjrj_1g",
+    "grau": "1G",
+    "cenario": "origem_publica_confirmada_em_decisao_e_no_portal",
+    "estado": "observado",
+    "evidencia": "Decisão colegiada do TJRJ reproduzida publicamente: https://fcruzadv.com.br/htmls3/processo_01842644720238190001.html; checkout local em 2026-11-12 confirmou CNJ idêntico, TJRJ/1G, 76 eventos de movimento expandidos, movimentacoes_completas=true. Em 2026-11-13, REA submeteu busca Por Número no [portal público TJRJ](https://www3.tjrj.jus.br/consultaprocessual/#/conspublica#cpfcnpj); dois resultados continham o CNJ consultado e um abriu a tela de detalhes. A ação Processo Eletrônico abriu modal com campo de senha provisória. Nenhuma senha foi enviada, nenhum PDF foi obtido e nenhum teor ou dado de parte foi impresso/salvo. A API de dados observada anteriormente não continha docEletronico; índice e documento permanecem sem validação. Revalidação opt-in do checkout em 2026-11-13: incluído em test_live_tjrj_1g_confere_identidade_e_completude_de_movimentos (7/7 passed); CNJ, TJRJ/1G, movimentos e movimentacoes_completas=true confirmados. Isso não valida peças/documentos.",
+    "observado_em": "2026-11-13"
+  },
+  {
+    "id": "tjrj_1g_paginated_bankruptcy",
+    "numero": "0089454-81.2003.8.19.0001",
+    "fonte": "tjrj_1g",
+    "grau": "1G",
+    "cenario": "processo_volumoso_com_historico_paginado",
+    "resultado_esperado": "movimentacoes_paginadas_completas",
+    "estado": "observado",
+    "evidencia": "Referência pública em processo correlato aponta o número como autos falimentares; consulta pública do TJRJ confirmou processoVolumoso=true e exibePaginacaoProcessoVolumoso=true. Revalidação do adaptador deste checkout em 2026-11-12: CNJ/TJRJ/1G confirmados, status=ok, 104 páginas, 1574 eventos de movimento expandidos e movimentacoes_completas=true. SPA usa o cursor ultimaOrdemExibida e bloqueia continuação quando a última linha não tem ordem; sem dados de partes copiados. Revalidação opt-in do checkout em 2026-11-13: incluído em test_live_tjrj_1g_confere_identidade_e_completude_de_movimentos (7/7 passed); CNJ, TJRJ/1G, movimentos e movimentacoes_completas=true confirmados. Isso não valida peças/documentos. O teste também exigiu pelo menos 100 páginas e 1.000 eventos.",
+    "observado_em": "2026-11-13"
+  },
+  {
+    "id": "tjrj_1g_lista_administrativa_2015",
+    "numero": "0038858-13.2015.8.19.0021",
+    "fonte": "tjrj_1g",
+    "grau": "1G",
+    "cenario": "processo_listado_em_publicacao_administrativa_confirmado_no_portal",
+    "estado": "observado",
+    "evidencia": "Consulta local da API pública TJRJ em 2026-11-12: CNJ idêntico, TJRJ/1G, status=ok, 135 movimentos completos em 1 página; origem do candidato em publicação administrativa pública TJRJ https://www.tjrj.jus.br/documents/d/guest/pagamentos_efetuados_dezembro_2025 Revalidação opt-in do checkout em 2026-11-13: incluído em test_live_tjrj_1g_confere_identidade_e_completude_de_movimentos (7/7 passed); CNJ, TJRJ/1G, movimentos e movimentacoes_completas=true confirmados. Isso não valida peças/documentos.",
+    "observado_em": "2026-11-13"
+  },
+  {
+    "id": "tjrj_1g_lista_administrativa_2020",
+    "numero": "0023447-14.2020.8.19.0001",
+    "fonte": "tjrj_1g",
+    "grau": "1G",
+    "cenario": "processo_listado_em_publicacao_administrativa_confirmado_no_portal",
+    "estado": "observado",
+    "evidencia": "Consulta local da API pública TJRJ em 2026-11-12: CNJ idêntico, TJRJ/1G, status=ok, 250 movimentos completos em 1 página; origem do candidato em publicação administrativa pública TJRJ https://www.tjrj.jus.br/documents/d/guest/pagamentos_efetuados_dezembro_2025 Revalidação opt-in do checkout em 2026-11-13: incluído em test_live_tjrj_1g_confere_identidade_e_completude_de_movimentos (7/7 passed); CNJ, TJRJ/1G, movimentos e movimentacoes_completas=true confirmados. Isso não valida peças/documentos.",
+    "observado_em": "2026-11-13"
+  },
+  {
+    "id": "tjrj_1g_lista_administrativa_2021",
+    "numero": "0214138-48.2021.8.19.0001",
+    "fonte": "tjrj_1g",
+    "grau": "1G",
+    "cenario": "processo_listado_em_publicacao_administrativa_confirmado_no_portal",
+    "estado": "observado",
+    "evidencia": "Consulta local da API pública TJRJ em 2026-11-12: CNJ idêntico, TJRJ/1G, status=ok, 157 movimentos completos em 1 página; origem do candidato em publicação administrativa pública TJRJ https://www.tjrj.jus.br/documents/d/guest/pagamentos_efetuados_dezembro_2025 Revalidação opt-in do checkout em 2026-11-13: incluído em test_live_tjrj_1g_confere_identidade_e_completude_de_movimentos (7/7 passed); CNJ, TJRJ/1G, movimentos e movimentacoes_completas=true confirmados. Isso não valida peças/documentos.",
+    "observado_em": "2026-11-13"
+  },
+  {
+    "id": "eproc_tjsp_1g_pdf_publico",
+    "numero": "4000708-48.2025.8.26.0020",
+    "fonte": "eproc_tjsp_1g",
+    "grau": "1G",
+    "cenario": "sentenca_publica_eproc_com_documento_verificavel",
+    "estado": "bloqueado",
+    "evidencia": "PDF SENT1 de 20/08/2025 reproduzido em fonte pública; consulta pelo wheel 0.6.0 em 2026-11-13 terminou em AcessoRestrito após a verificação do portal, sem dados do processo. REA executou o fluxo público de preencher e enviar; a captura encontrou marcador de desafio e não continha o CNJ consultado. Estado bloqueado descreve esta observação técnica, não inexistência do processo.",
+    "observado_em": "2026-11-13"
+  },
+  {
+    "id": "eproc_tjsp_2g_apelacao_publica",
+    "numero": "1002476-30.2025.8.26.0224",
+    "fonte": "eproc_tjsp_2g",
+    "grau": "2G",
+    "cenario": "apelacao_publica_com_acordao_e_codigo_verificavel_eproc",
+    "estado": "bloqueado",
+    "evidencia": "PDF RELVOTO1/ACOR2 reproduzido em fonte pública; consulta pelo wheel 0.6.0 em 2026-11-13 terminou em AcessoRestrito após a verificação do portal, sem dados do processo. Estado bloqueado descreve esta observação técnica, não inexistência do processo.",
+    "observado_em": "2026-11-13"
+  },
+  {
+    "id": "djen_tjrj_processo_volumoso_paginado",
+    "numero": "0023447-14.2020.8.19.0001",
+    "fonte": "djen",
+    "grau": "nao_se_aplica",
+    "cenario": "mais_de_20_comunicacoes_de_processo_confirmado_no_tjrj",
+    "resultado_esperado": "comunicacoes_mais_de_20_paginadas",
+    "estado": "observado",
+    "evidencia": "TJRJ 1G confirmou CNJ e 250 movimentos em 2026-11-12; DJEN live em 2026-11-13 retornou 24 comunicações com CNJ idêntico. Revalidar usando páginas de cinco e término por página curta; count não é prova de completude.",
+    "observado_em": "2026-11-13"
+  },
+  {
+    "id": "djen_tjsp_recuperacao_paginada",
+    "numero": "1100438-71.2024.8.26.0100",
+    "fonte": "djen",
+    "grau": "nao_se_aplica",
+    "cenario": "mais_de_20_comunicacoes_paginadas",
+    "resultado_esperado": "comunicacoes_mais_de_20_paginadas",
+    "estado": "observado",
+    "evidencia": "CNJ e classe Recuperação Judicial confirmados separadamente no e-SAJ/TJSP em 2026-11-13. Swagger oficial de produção define pagina e itensPorPagina (5 ou 100). As sondagens antigas usaram page/size sem efeito; com o contrato corrigido, consultar 8 páginas de 5 confirmou 37 comunicações únicas, identidade exata e término por página curta. count não foi usado como prova de completude.",
+    "observado_em": "2026-11-13"
+  },
+  {
+    "id": "djen_tjmg_eproc_migration",
+    "numero": "5031212-74.2025.8.13.0701",
+    "fonte": "djen",
+    "grau": "nao_se_aplica",
+    "cenario": "comunicacoes_oficiais_mencionam_migracao_e_eproc",
+    "estado": "observado",
+    "evidencia": "API oficial DJEN consultada pelo checkout em 2026-11-13: status=ok, paginação completa em uma página, quatro comunicações com CNJ exato e sigla TJMG. Três registros continham termos de migração e eproc; datas observadas: 2026-07-15, 2026-07-16 e 2026-10-16. Essa evidência se limita às comunicações do DJEN; não confirma resultado nem situação atual do processo no eproc.",
+    "observado_em": "2026-11-13"
+  }
+]

@@ -16,6 +16,7 @@ def test_live_datajud_retorna_registro_com_movimentos_e_graus():
     resultado = datajud.consultar_processo(PROCESSO_DEMO)
 
     assert resultado["status"] == "ok"
+    assert resultado["numero_cnj"] == PROCESSO_DEMO
     assert resultado["movimentos"]
     assert resultado["graus"]
     assert all(mov["grau"] for mov in resultado["movimentos"])

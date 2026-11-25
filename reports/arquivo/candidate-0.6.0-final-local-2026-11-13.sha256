@@ -1,0 +1,6 @@
+NanoJud 0.6.0 — artefatos finais locais (Windows, Python 3.12.10)
+Construídos em 2026-11-13 a partir da árvore de trabalho f7611c0 + alterações locais não commitadas.
+wheel: 140893 bytes; SHA-256 f0346b1c2bfb201b2044d2ba9798eaab10f6181d0f7b8880bd823d7b1c9ca8ef
+sdist: 374661 bytes; SHA-256 0d1c9a1952aa5cffdf9ac5410850b794dfb8cffb2cb648c171ec6dc103c2ee1a
+
+Estes hashes identificam os arquivos locais em dist/ e não substituem os hashes do artefato testado na matriz Linux. Não publicado.

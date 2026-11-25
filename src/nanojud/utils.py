@@ -1,11 +1,90 @@
 """Utility helpers for nanojud."""
 
+import math
 import re
+import stat
+import tempfile
 import unicodedata
+from pathlib import Path
 
-from .exceptions import FormatoCNJInvalido
+from .exceptions import DestinoInvalido, FormatoCNJInvalido
 
 CNJ_RE = re.compile(r"^(\d{7})-(\d{2})\.(\d{4})\.(\d)\.(\d{2})\.(\d{4})$")
+MAX_TIMEOUT_SECONDS = 24 * 60 * 60
+
+
+def salvar_pdf_atomico(conteudo: bytes, destino: Path) -> None:
+    """Publica bytes já validados no mesmo volume do destino."""
+    try:
+        with tempfile.TemporaryDirectory(dir=destino.parent, prefix=".nanojud-") as pasta:
+            temporario = Path(pasta) / "peca.pdf"
+            temporario.write_bytes(conteudo)
+            temporario.replace(destino)
+    except OSError as exc:
+        raise DestinoInvalido(f"Não foi possível gravar o PDF em '{destino}'.") from exc
+
+
+def tamanho_pdf_existente_valido(caminho: Path, max_bytes: int) -> int | None:
+    """Retorna o tamanho de um PDF local regular válido, ou None se não for seguro reutilizá-lo."""
+    try:
+        if caminho.is_symlink():
+            return None
+        metadados = caminho.stat()
+        if not stat.S_ISREG(metadados.st_mode) or not 5 <= metadados.st_size <= max_bytes:
+            return None
+        with caminho.open("rb") as arquivo:
+            if not arquivo.read(5).startswith(b"%PDF"):
+                return None
+        return metadados.st_size
+    except OSError:
+        return None
+
+
+def validar_inteiro(valor: object, *, nome: str, minimo: int, maximo: int | None = None) -> int:
+    """Valida um inteiro de fronteira sem aceitar bool como subtipo de int."""
+    if isinstance(valor, bool) or not isinstance(valor, int):
+        if maximo is not None:
+            raise ValueError(f"{nome} deve ser um inteiro entre {minimo} e {maximo}.")
+        raise ValueError(f"{nome} deve ser um inteiro válido.")
+    if valor < minimo or (maximo is not None and valor > maximo):
+        if maximo is None:
+            raise ValueError(f"{nome} deve ser pelo menos {minimo}.")
+        raise ValueError(f"{nome} deve estar entre {minimo} e {maximo}.")
+    return valor
+
+
+def validar_timeout(timeout: object, *, nome: str = "timeout") -> float:
+    """Rejeita timeouts de rede que possam remover o limite operacional."""
+    if isinstance(timeout, bool) or not isinstance(timeout, (int, float)):
+        raise ValueError(f"{nome} deve ser finito e estar entre 0 e 86400 segundos.")
+    try:
+        finito = math.isfinite(timeout)
+    except OverflowError:
+        finito = False
+    if not finito or timeout <= 0 or timeout > MAX_TIMEOUT_SECONDS:
+        raise ValueError(f"{nome} deve ser finito e estar entre 0 e 86400 segundos.")
+    return float(timeout)
+
+
+def validar_ttl_cache(ttl_seconds: object) -> int:
+    """Valida TTL inteiro não negativo; zero significa que o cache não expira."""
+    if isinstance(ttl_seconds, bool) or not isinstance(ttl_seconds, int) or ttl_seconds < 0:
+        raise ValueError("cache_ttl_seconds deve ser um inteiro não negativo.")
+    return ttl_seconds
+
+
+def validar_prazo_total(prazo_total: object) -> None:
+    """Valida o limite de espera total; None desativa explicitamente esse limite."""
+    if prazo_total is None:
+        return
+    if isinstance(prazo_total, bool) or not isinstance(prazo_total, (int, float)):
+        raise ValueError("prazo_total deve ser None ou ficar entre 0 e 86400 segundos.")
+    try:
+        finito = math.isfinite(prazo_total)
+    except OverflowError:
+        finito = False
+    if not finito or prazo_total < 0 or prazo_total > MAX_TIMEOUT_SECONDS:
+        raise ValueError("prazo_total deve ser None ou ficar entre 0 e 86400 segundos.")
 
 
 def limpar(texto: str) -> str:

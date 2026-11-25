@@ -18,8 +18,8 @@ Este modelo descreve riscos práticos para uso da biblioteca em ambiente jurídi
 | Coleta excessiva | Bloqueio, dano reputacional ou violação de regras | rate limit, cache, finalidade definida e volume proporcional |
 | Mudança de HTML da fonte | Dados incompletos ou parsing incorreto | fixtures, testes, erros explícitos e versionamento |
 | Logs com dados sensíveis | Exposição operacional | logging moderado e política de retenção |
-| Uso fora do escopo público | Risco jurídico e ético | não burlar autenticação, captcha, segredo de justiça ou restrições |
+| Acesso sem contexto de sessão | Exposição indevida ou resultado incorreto | escopo de sessão explícito, autorização de acesso, erros tipados e segregação de cache |
 
 ## Fora de escopo
 
-O projeto não fornece automação para login, quebra de captcha, extração de processos sigilosos ou contorno de medidas técnicas de proteção.
+Modos com sessão exigem credenciais fornecidas pelo usuário e isolamento por consulta. A existência de uma peça no índice não implica disponibilidade do arquivo. O modelo deve ser revisto ao adicionar uma integração ou alterar o tratamento de credenciais.

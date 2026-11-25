@@ -7,6 +7,7 @@
   --legal-navy: #0a1c2f;
   --legal-blue: #1d63ff;
   --legal-teal: #18a999;
+  --legal-teal-ink: #0b736c;
   --legal-green: #2ca25f;
   --legal-amber: #f0b24f;
   --legal-rose: #e65f75;
@@ -117,9 +118,8 @@
 
 .md-typeset .legal-kicker,
 .md-typeset .legal-section__eyebrow,
-.md-typeset .legal-card__label,
-.md-typeset .legal-system__top {
-  color: var(--legal-teal);
+.md-typeset .legal-card__label {
+  color: var(--legal-teal-ink);
   font-size: 0.76rem;
   font-weight: 800;
   letter-spacing: 0;
@@ -184,7 +184,7 @@
 }
 
 .md-typeset .legal-button--primary:hover {
-  background: linear-gradient(135deg, var(--legal-blue), var(--legal-teal));
+  background: linear-gradient(135deg, var(--legal-blue), var(--legal-teal-ink));
   color: #ffffff;
 }
 
@@ -351,6 +351,10 @@
   font-size: 1rem;
   line-height: 1.7;
   margin: 16px 0 0;
+}
+
+.md-typeset p.legal-section__eyebrow {
+  color: var(--legal-teal-ink);
 }
 
 .md-typeset .legal-card-grid {

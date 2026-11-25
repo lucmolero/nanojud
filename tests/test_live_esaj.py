@@ -22,7 +22,10 @@ def test_live_esaj_public_process_with_hidden_password_popup():
     partes = extrato["partes"]
     documentos = extrato["documentos"]
 
-    assert extrato["status"] == "ok"
+    completo = extrato["origem"]["movimentacoes_completas"]
+    assert extrato["status"] == ("ok" if completo else "partial")
+    if not completo:
+        assert extrato["origem"]["aviso_movimentacoes"]
     assert extrato["dados_basicos"]["numero"] == "1076539-20.2019.8.26.0100"
     assert extrato["dados_basicos"]["classe"]
     assert len(partes["principais"]) >= 1

@@ -36,4 +36,4 @@ Cenários adicionais obrigatórios:
 - execução fiscal;
 - falência ou recuperação judicial.
 
-Para validações com fonte real e corpus privado, veja [Validação Real](validacao-real.md).
+Os registros de validação live e o corpus privado ficam nos arquivos internos do repositório; a [matriz de fontes](fontes.md) descreve a cobertura publicada.

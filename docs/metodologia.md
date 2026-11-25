@@ -5,7 +5,7 @@ Este projeto privilegia rastreabilidade e previsibilidade em vez de automação 
 ## Premissas
 
 - A biblioteca consulta fontes públicas ou legitimamente acessíveis pelo usuário.
-- O projeto não tenta burlar captcha, login, segredo de justiça ou restrição técnica.
+- Cada modo de acesso informa seus requisitos de sessão e as capacidades disponíveis.
 - Cada retorno deve deixar claro origem, status e limites conhecidos.
 - Testes automatizados usam fixtures sanitizadas, sem depender de rede.
 

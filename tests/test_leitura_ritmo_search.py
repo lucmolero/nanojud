@@ -90,11 +90,13 @@ def test_preparar_documentos_reabre_o_processo_e_descarta_ticket_antigo():
 
 def test_api_ler_pecas_usa_o_numero_do_extrato_para_preparar_a_sessao(monkeypatch):
     preparado = {}
-    monkeypatch.setattr(api.esaj, "criar_session", lambda: "sessao")
+    monkeypatch.setattr(api.esaj, "criar_session", lambda **kwargs: "sessao")
     monkeypatch.setattr(
         api.esaj,
         "preparar_documentos",
-        lambda sessao, numero, movimentos, limite: preparado.update(sessao=sessao, numero=numero),
+        lambda sessao, numero, movimentos, limite, **kwargs: preparado.update(
+            sessao=sessao, numero=numero
+        ),
     )
     monkeypatch.setattr(api.esaj, "ler_pecas_publicas", lambda *a, **k: [])
     extrato = {
@@ -254,6 +256,18 @@ def test_search_fora_do_tjsp_sem_registro_no_datajud_da_erro_claro():
         datajud.resumo_do_datajud({"status": "nao_encontrado"})
 
 
+def test_search_fora_do_tjsp_preserva_resumo_parcial_datajud():
+    extracao = _datajud_ok()
+    extracao["status"] = "partial"
+    extracao["warnings"] = ["DataJud retornou apenas parte dos registros."]
+
+    resumo = datajud.resumo_do_datajud(extracao)
+
+    assert resumo["status"] == "partial"
+    assert "parcial" in resumo["mensagem"].casefold()
+    assert resumo["ultima_movimentacao"] == "Sentença - procedente"
+
+
 def test_cliente_search_fora_do_tjsp_usa_o_datajud(monkeypatch):
     cliente = client.NanoJudClient(session=object())
     monkeypatch.setattr(cliente, "consultar_datajud", lambda numero, **kw: _datajud_ok())
@@ -268,13 +282,23 @@ def test_cli_djen_aceita_desde_como_data_inicio(monkeypatch, capsys):
     recebido = {}
     monkeypatch.setattr(
         cli.api,
-        "consultar_djen",
-        lambda numero, data_inicio="": recebido.update(data_inicio=data_inicio) or [],
+        "consultar_djen_detalhado",
+        lambda numero, data_inicio="": (
+            recebido.update(data_inicio=data_inicio)
+            or {
+                "status": "ok",
+                "completo": True,
+                "paginas": 1,
+                "comunicacoes": [],
+                "avisos": [],
+            }
+        ),
     )
 
-    cli.main(["djen", TJSP, "--desde", "2026-01-01"])
+    assert cli.main(["djen", TJSP, "--desde", "2026-01-01"]) == 0
 
     assert recebido["data_inicio"] == "2026-01-01"
+    assert '"status": "ok"' in capsys.readouterr().out
 
 
 @pytest.mark.parametrize(

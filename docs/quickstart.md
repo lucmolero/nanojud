@@ -1,98 +1,48 @@
-# Quickstart
+# Primeira consulta
 
-Este guia mostra o caminho mais curto para instalar o projeto e fazer uma consulta básica usando a demonstração pública recomendada: `0015020-23.2010.8.26.0053`. Se você não programa, o [Guia do advogado](guia-do-advogado.md) explica tudo desde a instalação do Python.
+Este guia usa a candidata 0.6.0 do repositório. Até a publicação, `pip install nanojud` instala a [versão disponível no PyPI](https://pypi.org/project/nanojud/), cuja interface pode ser diferente. Confira a [cobertura por fonte](fontes.md) antes de automatizar uma rotina.
 
-## Instalar
+## Instalar a candidata
 
-Para usar o pacote publicado:
-
-```bash
-python -m pip install nanojud
-```
-
-Para também ler o texto de peças em PDF (`ler-pecas`):
+Use Python 3.11.5 a 3.14. Na raiz do repositório:
 
 ```bash
-python -m pip install "nanojud[pdf]"
+python -m venv .venv
 ```
 
-Para usar tambem o MCP local:
+Ative o ambiente virtual (`.\.venv\Scripts\Activate.ps1` no PowerShell ou `source .venv/bin/activate` em Linux/macOS). Depois instale e confira:
 
 ```bash
-python -m pip install "nanojud[mcp]"
+python -m pip install -e ".[mcp,pdf]"
+python -c "import nanojud; print(nanojud.__version__)"
 ```
 
-Para contribuir no repositorio clonado:
+Como alternativa à ativação, use o Python desse ambiente com `-m nanojud`.
 
-```bash
-python -m pip install -e ".[dev]"
-```
-
-## Consultar pelo terminal
+## Consultar
 
 ```bash
 nanojud consultar 0015020-23.2010.8.26.0053
-nanojud partes 0015020-23.2010.8.26.0053
 nanojud linha-do-tempo 0015020-23.2010.8.26.0053 --recentes-primeiro --limite 20
+nanojud djen 0015020-23.2010.8.26.0053
 nanojud extrato 0015020-23.2010.8.26.0053 --out extrato.json
 ```
 
-No terminal o resultado vem em texto legível; com `--out` ou ao redirecionar, vem em JSON. Se `nanojud` não for reconhecido, use `python -m nanojud`. Passo a passo completo, com instalação do Python no Windows: [Guia do advogado](guia-do-advogado.md).
+O exemplo é um processo público do TJSP. A resposta, o tempo de consulta e a disponibilidade das fontes variam. `consultar` resume a pesquisa; `extrato` é específico do e-SAJ/TJSP. DJEN fornece comunicações, não autos. O DataJud pode trazer metadados e movimentos, mas uma ausência ou falha nessa fonte não comprova inexistência do processo.
 
 ## Usar em Python
 
-Para quem programa. A primeira consulta:
-
 ```python
-from nanojud import api
+from nanojud import NanoJudClient
 
-numero = "0015020-23.2010.8.26.0053"
-resumo = api.search_processo(numero)
-
-print(resumo["numero"])
-print(resumo["classe"])
-print(resumo["ultima_movimentacao"])
+cliente = NanoJudClient()
+extrato = cliente.get_extrato("0015020-23.2010.8.26.0053")
+print(extrato.get("status"))
+print(extrato.get("origem"))
 ```
 
-## Gerar extrato
-
-```python
-from nanojud import api
-
-extrato = api.get_extrato("0015020-23.2010.8.26.0053")
-print(extrato["dados_basicos"])
-print(len(extrato["movimentacoes"]))
-```
-
-## Usar cliente configurável
-
-```python
-from nanojud import NanoJudClient, NanoJudConfig
-
-client = NanoJudClient(
-    NanoJudConfig(
-        timeout=20,
-        rate_limit_interval=1.0,
-        cache_enabled=True,
-    )
-)
-
-resumo = client.search_processo("0015020-23.2010.8.26.0053")
-print(resumo["classe"])
-```
-
-## Tratar erros previstos
-
-```python
-from nanojud import api
-from nanojud.exceptions import NanoJudError
-
-try:
-    extrato = api.get_extrato("0015020-23.2010.8.26.0053")
-except NanoJudError as exc:
-    print(type(exc).__name__, str(exc))
-```
+Leia `status`, `origem` e eventuais avisos antes de interpretar os movimentos. Para outro tribunal ou grau, escolha a fonte compatível; `get_extrato` acima consulta o e-SAJ/TJSP. Veja [cliente Python](client.md), [CLI](cli.md) e [erros](errors.md).
 
 ## Próximo passo
 
-Leia a [Demonstração Pública](demonstracao-publica.md) para entender por que esse processo foi escolhido e consulte o guia de [uso responsável](uso-responsavel.md) antes de automatizar consultas recorrentes.
+O [guia do advogado](guia-do-advogado.md) explica a leitura do resultado. Para conectar um agente, siga [instalação com IA](instalacao-com-ia.md). Antes de uma providência jurídica, confira o ato e a peça pertinentes no portal de origem.

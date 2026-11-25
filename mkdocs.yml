@@ -1,9 +1,7 @@
 site_name: NanoJud
 site_description: "NanoJud: dados judiciais públicos para agentes de IA, advogados e pesquisa jurídica."
 site_url: https://lucmolero.github.io/nanojud/
-repo_url: https://github.com/lucmolero/nanojud
-repo_name: lucmolero/nanojud
-edit_uri: edit/main/docs/
+edit_uri: https://github.com/lucmolero/nanojud/edit/main/docs/
 theme:
   name: material
   language: pt-BR
@@ -26,6 +24,14 @@ markdown_extensions:
       permalink: true
 extra_css:
   - stylesheets/landing.css
+  - stylesheets/ux-accessibility.css
+exclude_docs: |
+  /plano-produto-e-handoff.md
+  /equipe-e-execucao.md
+  /validacao-real.md
+  /aprendizados-mcp.md
+  /operacao-goal.md
+  /checagem-editorial-lancamento.md
 nav:
   - Início: index.md
   - Guia do Advogado: guia-do-advogado.md
@@ -33,9 +39,9 @@ nav:
   - Instalação Com IA: instalacao-com-ia.md
   - Para Advogados: para-advogados.md
   - Demonstração Pública: demonstracao-publica.md
-  - Aprendizados MCP: aprendizados-mcp.md
   - Exemplos Seguros: exemplos-seguros.md
   - Fontes: fontes.md
+  - Mapa nacional: mapa-nacional.md
   - Extração Agregada: extraction.md
   - MCP Local: mcp-local.md
   - PyPI e MCP: pypi.md
@@ -50,10 +56,10 @@ nav:
   - LGPD: lgpd.md
   - Modelo de Ameaças: threat-model.md
   - Fixtures: fixtures.md
-  - Validação Real: validacao-real.md
   - Uso Responsável: uso-responsavel.md
   - Governança: governanca.md
   - Release Notes:
+      - v0.6.0 (candidata): release-notes-v0.6.0.md
       - v0.5.3: release-notes-v0.5.3.md
       - v0.5.2: release-notes-v0.5.2.md
       - v0.5.1: release-notes-v0.5.1.md

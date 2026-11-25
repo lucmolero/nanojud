@@ -23,15 +23,22 @@ python -m pytest --cov
 
 ## Registro de execução
 
-Para rotinas reais, registre:
+Para rotinas reais, registre somente o necessário para reproduzir o comportamento. CNJ, URL de consulta e conteúdo de resposta podem revelar atividade jurídica; não os grave em log operacional por padrão. Se a correlação entre execuções for indispensável, use um identificador interno ou hash com segredo controlado pela organização, e defina acesso e retenção.
 
-- versão do pacote;
-- número CNJ normalizado;
-- data de execução;
-- URL final consultada;
-- status da consulta;
-- quantidade de movimentações e documentos detectados;
-- parâmetros de cache, timeout e rate limit.
+- versão do pacote e ambiente;
+- identificador pseudonimizado da execução;
+- data e hora;
+- host/rota sem query string, tokens ou identificadores do processo;
+- status da consulta e fonte;
+- quantidade de movimentações e documentos, sem conteúdo;
+- parâmetros operacionais não sensíveis de cache, timeout e rate limit.
+
+Não registre sem necessidade:
+
+- CNJ em claro;
+- URL integral com query, tokens ou IDs de documentos;
+- partes, advogados, textos de movimentos ou documentos;
+- segredos de sessão, senha processual ou chave de API.
 
 ## Artefatos
 

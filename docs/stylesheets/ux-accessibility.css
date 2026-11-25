@@ -1,0 +1,23 @@
+/* Material's reset removes the native input outline; keep keyboard focus visible in search. */
+.md-search__input:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+[data-md-toggle="search"]:not(:checked) ~ .md-header .md-search__input::placeholder {
+  color: var(--md-primary-bg-color);
+  opacity: 0.9;
+}
+
+[data-md-toggle="search"]:checked ~ .md-header .md-search__input::placeholder {
+  color: inherit;
+  opacity: 0.9;
+}
+
+@media (max-width: 600px) {
+  .md-typeset pre > code {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+}

@@ -107,6 +107,8 @@ def test_extrato_com_limite_sinaliza_movimentacoes_incompletas():
     )
 
     assert len(extrato["movimentacoes"]) == 2
+    assert extrato["status"] == "partial"
+    assert extrato["mensagem"].startswith("Extrato gerado parcialmente:")
     assert extrato["origem"]["movimentacoes_completas"] is False
     assert extrato["origem"]["aviso_movimentacoes"]
 

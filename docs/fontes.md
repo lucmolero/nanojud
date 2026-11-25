@@ -1,60 +1,33 @@
-# Fontes
+# Fontes e cobertura
 
-`nanojud` separa as fontes de extração por responsabilidade.
+O universo nacional de ramos, tribunais, sistemas e serviços está em [Mapa nacional](mapa-nacional.md). Esta página é a matriz **operacional** da NanoJud: não atribui cobertura só porque um sistema existe ou aparece em levantamento nacional.
 
-## eSAJ/TJSP
+A NanoJud combina fontes nacionais e portais processuais. Cada resposta identifica a fonte e o estado da coleta. Uma resposta vazia ou indisponível de uma fonte não demonstra que o processo inexiste. A cobertura abaixo descreve o código candidato 0.6.0 e observações pontuais registradas em novembro de 2026; disponibilidade futura depende dos serviços externos.
 
-Fonte de páginas públicas processuais do Tribunal de Justiça de São Paulo.
+| Fonte | Consulta de capa e movimentos | Publicações | Índice de peças | Documento individual | Observação |
+| --- | --- | --- | --- | --- | --- |
+| e-SAJ/TJSP 1G | 5 amostras positivas; uma consulta cruzada de CNJ 2G confirmou `ProcessoNaoEncontrado` somente no CPoPG | Por DJEN, separadamente | Observado em amostras | PDF público observado por ID | Histórico pode vir parcial por limite; acesso a peça depende da sessão. O resultado cruzado não afirma ausência no tribunal e não substitui CPoSG/2G |
+| e-SAJ/TJSP 2G | Observada em amostras | Por DJEN, separadamente | Vínculo de peça observado no CPoSG | PDF individual obtido em amostra pelo próprio ID do movimento | Adaptador separado do 1G; isso não comprova autos completos |
+| PJe/TJMG 1G | Observada em amostras | Por DJEN, separadamente | Observado em amostras | PDF público individual obtido no wheel 0.6.0 via Python e MCP, com a mesma sessão da consulta | Amostras PJe não representam todo o 1G: a migração para eproc está em curso por unidade/acervo |
+| eproc/TJMG 1G | Formulário público oficial carregado; submissão não concluída, sem CNJ ou extrato na resposta | Por DJEN, em linha separada | Não validado | Não validado | A Portaria Conjunta 1.720/PR/2025, na versão consolidada, prevê dados básicos públicos e decisões; autos completos dependem de perfil autenticado ou chave do processo, e uma chave de documento identifica um documento específico. A consulta pública não exibe peças enviadas por usuários externos. A evidência live desta instalação ainda não confirma identidade nem movimentos; fora da cobertura operacional |
+| eproc/TJMG 2G | Consulta pública oficial identificada; uma amostra retornou “Nenhum registro encontrado” e outra permaneceu sem submissão após confirmação visual não concluída | Por DJEN, em linha separada | Não validado | Não validado | A mesma norma e o mesmo modelo público/autenticado/de chaves se aplicam ao eproc TJMG; a prova de 2G continua zero positiva. Consultas robotizadas que comprometam disponibilidade, estabilidade ou segurança são tratadas pela norma como uso inadequado; isso não equivale a proibição geral de automação. Volume deve respeitar limites operacionais e ser controlado |
+| TJRJ · Consulta Pública SPA/API 1G | API revalidada em 7 amostras positivas e 1 teste negativo cruzado (CNJ confirmado no 2G não localizado como origem 1G) | Por DJEN, separadamente | Sem resultado positivo validado | Não validado; o detalhe da API não traz identificadores de peças | O visualizador oficial mostra senha provisória ou acesso pelo Portal de Serviços. O manual do TJRJ informa que quem não está vinculado aos autos precisa de senha provisória obtida no cartório/secretaria. Nenhuma credencial ou peça foi obtida. Solicitação por motivo, índice e arquivo seguem sem prova. Não comprova eproc/TJRJ 1G |
+| TJRJ · busca pública 2G (SPA) | Duas buscas oficiais retornaram CNJ e tipo 2 exatos; nenhum extrato confirmado | Por DJEN, separadamente | Sem detalhe validado | Sem documento validado | Em ambas as amostras, o detalhe encaminhou a URL ao eJUD sem confirmar o CNJ; na segunda, a chamada de movimentos retornou HTTP 412. Isso prova busca/roteamento, não capa, movimentos ou cobertura operacional. eJUD, PJe 2G e eproc 2G permanecem rotas independentes |
+| TJRJ · Projudi/VEP legado | Formulário público oficial aceita o modo “Segunda Instância”; a consulta normal da amostra 2G `0086630-88.2022.8.19.0000`, roteada pela SPA do TJRJ ao eJUD, retornou “Nenhum registro encontrado” no Projudi | Por DJEN, separadamente | Sem resultado validado | Sem documento validado | Manuais do TJRJ identificam o Projudi como sistema da Vara de Execuções Penais; a tentativa não demonstra que ele cubra o acervo geral de 2G. Nenhum desafio apareceu; não inferir ausência do processo em outros sistemas |
+| eproc/TJRJ 1G | Entrada eproc oficial aponta à instalação 1G; link público levou ao host de consulta, que respondeu HTTP 403 no Chromium REA e em GET comum via `requests` | Por DJEN, separadamente | Não validado | Não validado | Nenhum CNJ submetido. O 403 nesta janela/cliente não prova indisponibilidade geral; integração eproc/TJRJ 1G distinta da SPA/API TJRJ 1G |
+| eproc/TJRJ 2G | Entrada eproc oficial aponta à instalação 2G; link público levou ao host de consulta, que respondeu HTTP 403 no Chromium REA e em GET comum via `requests` | Por DJEN, separadamente | Não validado | Não validado | Nenhum CNJ submetido. A instalação é prioritária para 2G segundo ato oficial do TJRJ, mas não há extrato operacional validado |
+| DJEN | Não se aplica | Observada em amostras de SP, RJ, MG, BA, PR, TRF3 e TRF4, incluindo comunicações de recursos estaduais e federais de 2G | Não se aplica | Não se aplica | Comunicação processual não é andamento, não confirma a rota de tramitação do processo e não equivale aos autos |
+| DataJud | Contrato implementado; revalidações recentes em TJSP/TJMG/candidato eproc terminaram sem resposta (`ReadTimeout`, HTTP 429 ou `ConsultaIndisponivel`) | Não se aplica | Não se aplica | Não se aplica | Evidência inconclusiva sobre disponibilidade nesta janela; uma chamada sem subtipo da exceção não permite atribuir a causa. Falha de consulta não indica ausência dos processos nem invalida observações positivas anteriores |
+| eproc/TJSP 1G/2G | 1G segue a entrada pública oficial e terminou em `AcessoRestrito`; 2G segue o botão oficial EPROC até o formulário direto e também terminou em `AcessoRestrito` | Não comprovada | Não comprovado | Não comprovado | Desafio visível no formulário direto 2G; adaptadores separados e fora da cobertura anunciada até resposta com identidade confirmada |
+| MNI/TJRJ · DCP 2.2.2 | A documentação oficial prevê consulta de dados, movimentos e identificadores de documentos; nenhuma resposta real desta instalação foi validada | Não substitui DJEN | Identificadores de documentos previstos no manual, sem índice live validado | Não validado | O TJRJ publica um endpoint MNI e descreve autenticação por usuário e senha provisionados; o acesso de produção publicado no manual é separado do endpoint listado na página de transparência. Sem credenciais ou consulta live neste candidato; fora da cobertura operacional. O TJRJ também documenta integrações MNI do eproc 2G para comunicação institucional; isso não comprova consulta externa de processos nem amplia esta cobertura |
+| TJRJ · eJUD 2G legado | Rota encaminhada pela SPA; GET oficial respondeu HTTP 200 com título de resultado, mas continha marcador de CAPTCHA e não confirmou CNJ, movimentos ou documento | Por DJEN, quando houver comunicação | Em descoberta | Em descoberta | A página de resultado não equivale a extrato. Nenhum desafio foi resolvido; linha fora da cobertura operacional |
+| TJRJ · PJe 2G | Formulário público identificado; GET via requests recebeu página, navegador REA recebeu HTTP 403 antes da consulta | Por DJEN, quando houver comunicação | Em descoberta | Em descoberta | Nenhuma busca submetida; o 403 desta sessão não prova indisponibilidade geral; fora da cobertura |
+| TJMG · 2G/eproc | Um candidato oficial consultado retornou “Nenhum registro encontrado”; segundo candidato aguarda validação manual da confirmação | Por DJEN, quando houver comunicação | Em descoberta | Em descoberta | O rastreador oficial de precatórios exibiu `2040810-72.2025.8.13.0.000` e `2042391-25.2025.8.13.0.000` no campo “Nº Eproc 2G”; ambos normalizam para CNJ válido. O primeiro resultado é negativo apenas para aquela consulta; o segundo abriu etapa de confirmação sem resposta processual. Não inferir disponibilidade geral nem inexistência no TJMG. Cobertura positiva segue zero; implantação gradual e exceções conforme Portaria Conjunta 1.770/2026 |
+| TJMG · Consulta pública massiva 2G legada | Resultado pós-desafio não comprovado pela Evidence REA recuperável; a captura citada mostra apenas a tela do desafio, sem CNJ nem extrato | Por DJEN, quando houver comunicação | Em descoberta | Em descoberta | Relatos anteriores de capa, “Todos Andamentos”, HTTP 401 e link de decisão não têm Evidence pós-interação identificável nesta auditoria. Não comprovam identidade, movimentos, sessão ou documentos; fora da cobertura até nova validação. Rota distinta de JPe-Themis e eproc 2G |
+| TJMG · Detalhe legado 2G por identificador | Uma amostra foi consultada pelo leitor Python: movimentos, campos de capa e partes/advogados foram normalizados após validar CNJ e sequencial TJMG em cada página; o retorno segue parcial | Por DJEN, em linha separada | Não validado | Um vínculo de documento apareceu na movimentação de outra amostra e o endpoint oficial retornou DOC público sem autenticação/cookie fornecido; Python e MCP agora oferecem obtenção individual em memória com validação de vínculo, identidade, MIME, assinatura e limite de bytes | Exige o identificador interno `listaProcessos` de 17 dígitos; não deriva o ID pelo CNJ nem integra `extract_process`. Evidência de um documento não prova índice completo, paginação, disponibilidade de outros arquivos ou cobertura geral. Publicações não são normalizadas e autos completos não foram reconciliados |
+| TJMG · 2G/JPe-Themis | Portal oficial localizado; a página de produção exibe login por usuário/senha, certificado digital ou credencial PJe. A página institucional lista autocadastramento de advogados e uma seção separada de consulta pública | Conforme acesso da sessão | Conforme acesso da sessão | Conforme acesso da sessão | Não confundir o JPe-Themis autenticado com a consulta pública massiva, que o portal encaminha a instalação legada distinta. Ainda não há consulta autenticada ou extrato atribuído ao JPe comprovado nesta auditoria. Instalação distinta do eproc 2G |
+| TJMG · Consulta Processual Unificada | Host de produção e tela com filtros observados; sessões limpas em `/home` e `/pesquisa` terminaram com `error=login_required`; nenhuma busca submetida | Conforme sistema subjacente | Em descoberta | Em descoberta | Agregador do TJMG é rota própria, separada dos adaptadores diretos. Escopo inicial anunciado em homologação: PJe, PJe-TR, eproc 1G/2G e SIAP. Busca não validada; estado não prova que toda modalidade pública exija login; fora da cobertura operacional |
 
-Extrações suportadas:
+**Autos completos** exigem identificar o escopo do índice, obter os arquivos correspondentes e reconciliar faltas, falhas e restrições. Um PDF obtido isoladamente não comprova integridade dos autos. Para os detalhes de retorno, consulte [contratos](contracts.md), [erros](errors.md) e [API Python](api-reference.md).
 
-- dados básicos;
-- partes;
-- advogados e OAB quando presentes na página;
-- movimentações;
-- documentos vinculados;
-- audiências;
-- petições;
-- incidentes, apensos e processos relacionados;
-- HTML bruto opcional para auditoria.
-
-## DataJud/CNJ
-
-Fonte de dados processuais estruturados pela API pública do DataJud.
-
-Extrações suportadas:
-
-- número CNJ;
-- índice DataJud inferido pelo CNJ;
-- tribunal;
-- grau;
-- classe;
-- órgão julgador;
-- assuntos;
-- movimentos;
-- partes quando disponíveis;
-- payload bruto opcional.
-
-O DataJud usa API key pública, documentada na Wiki oficial do DataJud/CNJ. A biblioteca inclui a chave pública vigente como fallback e também lê `NANOJUD_DATAJUD_API_KEY`, `DATAJUD_API_KEY` ou `CNJ_DATAJUD_API_KEY`, ou aceita `api_key` explicitamente.
-
-Como o CNJ pode alterar a chave pública a qualquer momento, em caso de falha de autenticação informe uma chave atualizada por variável de ambiente ou argumento.
-
-## DJEN
-
-Fonte de comunicações, publicações e intimações do Diário de Justiça Eletrônico Nacional.
-
-Extrações suportadas:
-
-- id da comunicação;
-- data de disponibilização;
-- tribunal;
-- órgão;
-- classe;
-- tipo de comunicação;
-- destinatários;
-- texto integral;
-- link.
-
-## Escopo
-
-O projeto não calcula risco, não estima fase processual, não atribui relevância jurídica e não gera parecer. A camada nova é estritamente de extração, normalização técnica, preservação de fonte e exportação.
+DataJud e DJEN têm alcance nacional conforme os dados que cada API publica. Os portais e o MNI exigem validação por instalação, grau e modo de acesso. No TJMG, o sistema aplicável depende da origem, unidade/competência, acervo e migração; há também uma consulta unificada anunciada como agregador dos sistemas listados, mas ainda sem prova operacional neste projeto. “TJMG 1G” e “TJMG 2G” não são, cada um, uma rota única estática. Quando houver credenciais ou senha processual, o acesso dependerá das permissões que a própria fonte conceder à sessão.

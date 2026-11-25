@@ -6,7 +6,13 @@ import textwrap
 from typing import Any
 
 LARGURA = 100
-NOMES_FONTES = {"esaj": "eSAJ", "datajud": "DataJud", "djen": "DJEN"}
+NOMES_FONTES = {
+    "esaj": "eSAJ",
+    "esaj_tjsp_2g": "e-SAJ/TJSP 2G",
+    "datajud": "DataJud",
+    "djen": "DJEN",
+    "pje_tjmg": "PJe/TJMG",
+}
 ROTULOS_POLOS = (
     ("polo_ativo", "POLO ATIVO"),
     ("polo_passivo", "POLO PASSIVO"),
@@ -41,7 +47,24 @@ def _quebrar(texto: str, recuo: int) -> str:
 
 def texto_resumo(resumo: dict[str, Any]) -> str:
     """Resumo de um processo (resultado de ``search``)."""
-    origem = "DataJud (processo fora do TJSP)" if resumo.get("fonte") == "datajud" else "eSAJ/TJSP"
+    origem = (
+        "DataJud/CNJ"
+        if resumo.get("fonte") == "datajud"
+        else "e-SAJ/TJSP (CPoPG)"
+        if resumo.get("fonte") == "esaj"
+        else resumo.get("fonte") or "não informada"
+    )
+    status = str(resumo.get("status") or "")
+    status_legivel = {
+        "ok": "sem falhas reportadas",
+        "partial": "parcial",
+        "erro": "erro",
+        "nao_encontrado": "não encontrado",
+    }.get(status, status)
+    completude = resumo.get("coleta_completa")
+    completude_legivel = (
+        "sim" if completude is True else "não" if completude is False else "não informada"
+    )
     linhas = [
         f"Processo {resumo.get('numero', '')}",
         "-" * 60,
@@ -55,7 +78,15 @@ def texto_resumo(resumo: dict[str, Any]) -> str:
     ]
     if resumo.get("ultima_movimentacao"):
         linhas.append(_quebrar(str(resumo["ultima_movimentacao"]), 22).rstrip())
-    linhas += [_linha("Fonte", origem), _linha("Link", resumo.get("url"))]
+    linhas += [
+        _linha("Estado da coleta", status_legivel),
+        _linha("Fonte", origem),
+        _linha("Grau", resumo.get("grau")),
+        _linha("Data da coleta", resumo.get("data_coleta")),
+        _linha("Coleta completa", completude_legivel),
+        _linha("Aviso", resumo.get("mensagem") if status == "partial" else ""),
+        _linha("Link", resumo.get("url")),
+    ]
     return "\n".join(linha for linha in linhas if linha)
 
 
@@ -88,6 +119,8 @@ def texto_timeline(registros: list[dict[str, Any]]) -> str:
         linhas.append(cabecalho.rstrip())
         texto = _cortar(r.get("texto"), 220)
         if texto:
+            if "\ufffd" in texto:
+                linhas.append("  [Atenção: texto já contém caracteres substituídos na fonte.]")
             linhas.append(_quebrar(texto, 24))
     linhas.append("")
     linhas.append(f"{len(registros)} evento(s). Use --formato json para ver todos os campos.")
@@ -109,9 +142,26 @@ def texto_comunicacoes(comunicacoes: list[dict[str, Any]]) -> str:
             linhas.append(f"{'':<12}{c['nomeOrgao']}")
         texto = _cortar(c.get("texto"), 260)
         if texto:
+            if "\ufffd" in texto:
+                linhas.append("  [Atenção: texto já contém caracteres substituídos na fonte.]")
             linhas.append(_quebrar(texto, 12))
     linhas.append("")
     linhas.append(
         f"{len(comunicacoes)} comunicação(ões). Use --formato json para ver todos os campos."
     )
+    return "\n".join(linhas)
+
+
+def texto_resultado_djen(resultado: dict[str, Any]) -> str:
+    """Mostra status e avisos do DJEN junto das comunicações preservadas."""
+    comunicacoes = resultado.get("comunicacoes") or []
+    status = str(resultado.get("status") or "partial")
+    paginas = resultado.get("paginas", 0)
+    linhas = [f"DJEN: {status} — {len(comunicacoes)} comunicação(ões), {paginas} página(s)."]
+    avisos = resultado.get("avisos") or []
+    if avisos:
+        linhas.append("Avisos:")
+        linhas.extend(f"- {aviso}" for aviso in avisos)
+    linhas.append("")
+    linhas.append(texto_comunicacoes(comunicacoes))
     return "\n".join(linhas)
