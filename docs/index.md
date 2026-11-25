@@ -4,6 +4,8 @@ hide:
   - toc
 ---
 
+> **Versão em preparação.** Esta documentação descreve a candidata 0.6.0 do repositório. A [versão publicada no PyPI](https://pypi.org/project/nanojud/) pode ter menos recursos. Consulte a [matriz de fontes](fontes.md) antes de instalar para uma rotina profissional.
+
 <main class="legal-home">
   <section class="legal-hero" aria-labelledby="legal-home-title">
     <div class="legal-hero__copy">
@@ -11,17 +13,18 @@ hide:
         <img src="assets/nanojud-icon.svg" alt="" />
         <span>NanoJud</span>
       </div>
-      <p class="legal-kicker">Open source legal data infrastructure</p>
-      <h1 id="legal-home-title">Dados judiciais públicos para agentes, automações e pesquisa jurídica confiável.</h1>
+      <p class="legal-kicker">Consulta processual em Python e MCP</p>
+      <h1 id="legal-home-title">Consulte processos, confira a origem e trabalhe com dados estruturados.</h1>
       <p class="legal-lede">
-        Uma biblioteca Python para consultar, estruturar e auditar informações públicas do eSAJ/TJSP, dados
-        estruturados do DataJud/CNJ e comunicações do DJEN com rastreabilidade, testes automatizados e governança
-        documentada.
+        Para advogados, equipes e agentes de IA: capa, andamento, comunicações e peças acessíveis, com estado de
+        completude por fonte. Use API Python, linha de comando ou servidor MCP local e gere tabelas e respostas
+        fundamentadas nos registros encontrados.
       </p>
       <div class="legal-actions" aria-label="Ações principais">
         <a class="legal-button legal-button--primary" href="quickstart/">Começar pelo quickstart</a>
         <a class="legal-button" href="instalacao-com-ia/">Instalar com IA</a>
-        <a class="legal-button" href="demonstracao-publica/">Ver demo pública</a>
+        <a class="legal-button" href="demonstracao-publica/">Ver demonstração</a>
+        <a class="legal-button legal-button--ghost" href="fontes/">Ver cobertura por fonte</a>
         <a class="legal-button legal-button--ghost" href="https://github.com/lucmolero/nanojud">GitHub</a>
       </div>
     </div>
@@ -29,7 +32,7 @@ hide:
     <div class="legal-hero__system" aria-label="Fluxo técnico de dados jurídicos">
       <div class="legal-system__top">
         <span class="legal-dot legal-dot--green"></span>
-        <span>agentic legal pipeline</span>
+        <span>consulta com proveniência</span>
       </div>
       <div class="legal-flow">
         <div class="legal-node">
@@ -39,36 +42,33 @@ hide:
         <div class="legal-connector"></div>
         <div class="legal-node">
           <strong>02</strong>
-          <span>Fonte pública</span>
+          <span>Fonte consultada</span>
         </div>
         <div class="legal-connector"></div>
         <div class="legal-node legal-node--active">
           <strong>03</strong>
-          <span>JSON auditável</span>
+          <span>Dados e limites</span>
         </div>
       </div>
-      <pre><code>{
-  "tribunal": "TJSP",
-  "origem": "eSAJ",
-  "status": "estruturado",
-  "governanca": ["LGPD", "limites", "reprodutibilidade"],
-  "automacao": "pronta_para_agentes"
-}</code></pre>
+      <pre><code>CNJ → fonte → resultado
+       ↘ grau e data da coleta
+       ↘ estado e avisos
+       ↘ registros e documentos disponíveis</code></pre>
     </div>
   </section>
 
   <section class="legal-signal-grid" aria-label="Sinais de confiança do projeto">
     <article>
-      <strong>90%+</strong>
-      <span>cobertura automatizada</span>
+      <strong>Estados claros</strong>
+      <span>resultado completo ou parcial por fonte</span>
     </article>
     <article>
-      <strong>Typed</strong>
+      <strong>Contratos</strong>
       <span>contratos públicos e <code>py.typed</code></span>
     </article>
     <article>
-      <strong>CI + CodeQL</strong>
-      <span>qualidade e segurança contínuas</span>
+      <strong>Testes</strong>
+      <span>verificações automatizadas no repositório</span>
     </article>
     <article>
       <strong>LGPD</strong>
@@ -78,13 +78,13 @@ hide:
 
   <section class="legal-section legal-section--split">
     <div>
-      <p class="legal-section__eyebrow">Para quem está construindo o futuro jurídico</p>
+      <p class="legal-section__eyebrow">Aplicações</p>
       <h2>Base técnica para produtos, escritórios e pesquisa aplicada.</h2>
     </div>
     <p>
       O projeto foi desenhado para unir engenharia de software, responsabilidade jurídica e abertura acadêmica. Ele
-      transforma consultas públicas em dados estruturados para fluxos verificáveis, sem prometer acesso privilegiado,
-      contornar barreiras ou substituir análise profissional.
+      transforma consultas processuais em dados estruturados para fluxos verificáveis, com origem e limites de acesso
+      explícitos para cada fonte.
     </p>
   </section>
 
@@ -114,7 +114,7 @@ hide:
   <section class="legal-section legal-section--accent">
     <div>
       <p class="legal-section__eyebrow">Engenharia verificável</p>
-      <h2>Um projeto open source que mostra senioridade no código e no cuidado institucional.</h2>
+      <h2>Código, contratos e limites documentados.</h2>
       <p>
         O repositório combina parser, cliente, CLI, documentação, testes sem rede, testes live opcionais, validação de
         build, auditoria de dependências, changelog, governança, segurança e notas de release versionadas.
@@ -158,7 +158,7 @@ print(len(extrato["movimentacoes"]))</code></pre>
   <section class="legal-footer-cta">
     <div>
       <p class="legal-section__eyebrow">Projeto independente</p>
-      <h2>Pronto para avaliação técnica, uso responsável e evolução pública.</h2>
+      <h2>Consulte a cobertura antes de usar.</h2>
       <p>
         <strong>NanoJud</strong> não é um produto oficial do TJSP, CNJ, eSAJ ou DataJud. A biblioteca organiza
         consultas a fontes públicas ou legitimamente acessíveis pelo usuário.

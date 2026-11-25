@@ -34,4 +34,4 @@ Release de maturidade para preparar o projeto para divulgação pública como bi
 
 ## Para usuários jurídicos
 
-Use apenas com dados públicos ou legitimamente acessíveis. O projeto não busca burlar captcha, senha, segredo de justiça, autenticação ou restrições técnicas das fontes.
+Use apenas dados acessíveis no modo de consulta empregado. A disponibilidade de conteúdo depende da fonte e das permissões da sessão.

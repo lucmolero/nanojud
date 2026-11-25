@@ -1,0 +1,6 @@
+NanoJud 0.6.0 — artefatos finais após auditoria Sol (Windows, Python 3.12.10)
+Construídos em 2026-11-25 a partir do checkout f7611c0 e alterações locais reconciliadas.
+wheel: 140893 bytes; SHA-256 87d4f702dea66003188611a2cf5e5344d6da8da22f25e84da502a2f902cfdf39
+sdist: 374661 bytes; SHA-256 345062154c47a3c33324cc7b74d54472bd39b032dd118966c7c3724131418fca
+
+Hashes identificam os artefatos locais em dist/; não são publicação. Matriz Linux continua sendo a execução local registrada em reports/estado-goal.md, não uma execução remota de GitHub Actions para este commit.

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .sources import DATAJUD, DJEN, ESAJ
+from .sources import DATAJUD, DJEN, ESAJ, ESAJ_TJSP_2G
 
 
 def compactar_envelope(envelope: dict[str, Any]) -> dict[str, Any]:
@@ -19,6 +19,15 @@ def compactar_envelope(envelope: dict[str, Any]) -> dict[str, Any]:
         data[ESAJ] = {k: v for k, v in data[ESAJ].items() if k != "movimentacoes"}
     if isinstance(data.get(DATAJUD), dict):
         data[DATAJUD] = {k: v for k, v in data[DATAJUD].items() if k not in ("movimentos", "raw")}
+    cposg = data.get(ESAJ_TJSP_2G)
+    if isinstance(cposg, dict):
+        data[ESAJ_TJSP_2G] = {
+            **cposg,
+            "resultados": [
+                {k: v for k, v in item.items() if k != "movimentacoes"}
+                for item in cposg["resultados"]
+            ],
+        }
     data.pop(DJEN, None)
     saida["data"] = data
     saida["compacto"] = True

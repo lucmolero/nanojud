@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nanojud"
-version = "0.5.3"
-description = "NanoJud: toolkit Python para extração responsável, normalização e exportação de dados públicos judiciais do eSAJ/TJSP, DataJud/CNJ e DJEN."
+version = "0.6.0"
+description = "Biblioteca Python, CLI e MCP para consulta processual com fontes e capacidades verificáveis."
 readme = {file = "README.md", content-type = "text/markdown"}
-requires-python = ">=3.10"
+requires-python = ">=3.11.5,<3.15"
 dependencies = [
   "requests>=2.33.0",
   "beautifulsoup4>=4.11",
@@ -18,16 +18,16 @@ license-files = ["LICENSE"]
 authors = [
   {name = "Luciano Molero"}
 ]
-keywords = ["esaj", "tjsp", "datajud", "djen", "mcp", "agentes", "juridico", "legaltech", "lawtech", "processo"]
+keywords = ["esaj", "tjsp", "datajud", "djen", "pje", "tjmg", "mcp", "agentes", "juridico", "legaltech", "lawtech", "processo"]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Legal Industry",
   "Intended Audience :: Developers",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Natural Language :: Portuguese (Brazilian)",
   "Operating System :: OS Independent",
   "Typing :: Typed",
@@ -60,6 +60,9 @@ mcp = [
   "mcp>=1.30.0,<2",
   "pypdf>=6.19.0,<7",
 ]
+autenticacao = [
+  "playwright>=1.40",
+]
 pdf = [
   "pypdf>=6.19.0,<7",
 ]
@@ -87,7 +90,7 @@ markers = [
 
 [tool.ruff]
 line-length = 100
-target-version = "py310"
+target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
@@ -103,12 +106,8 @@ skip_covered = true
 fail_under = 90
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.11"
 ignore_missing_imports = true
 warn_unused_configs = true
 no_implicit_optional = true
 check_untyped_defs = true
-
-[[tool.mypy.overrides]]
-module = "nanojud.esaj"
-ignore_errors = true

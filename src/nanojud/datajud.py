@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import math
 import os
 import re
 import time
 from collections.abc import Callable
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+from email.utils import parsedate_to_datetime
 from typing import Any, cast
 
 import requests
@@ -14,16 +16,19 @@ import requests
 from .exceptions import AcessoRestrito, ConsultaIndisponivel, ProcessoNaoEncontrado
 from .models import ResumoProcesso
 from .normalization import normalizar_data, somente_digitos
-from .schemas import DataJudExtraction
+from .schemas import DataJudExtraction, SourceMetadata
 from .sources import DATAJUD
-from .utils import validar_numero_cnj
+from .utils import validar_numero_cnj, validar_prazo_total, validar_timeout
 
 API_TEMPLATE = "https://api-publica.datajud.cnj.jus.br/api_publica_{indice}/_search"
 DATAJUD_WIKI_ACESSO_URL = "https://datajud-wiki.cnj.jus.br/api-publica/acesso/"
 PUBLIC_DATAJUD_API_KEY = "cDZHYzlZa0JadVREZDJCendQbXY6SkJlTzNjLV9TRENyQk1RdnFKZGRQdw=="
 # O DataJud indexa um registro por grau (G1, TR, G2...) para o mesmo numero CNJ.
 MAX_REGISTROS = 10
+MAX_PAGINAS = 10
+MAX_RETRY_AFTER_SECONDS = 60.0
 ORDEM_GRAUS = ("G1", "JE", "TR", "G2", "SUP")
+HTTP_STATUS_TRANSITORIOS = frozenset({408, 429, 500, 502, 503, 504})
 DEFAULT_SOURCE_FIELDS = [
     "numeroProcesso",
     "classe",
@@ -68,6 +73,12 @@ INDICES_JUSTICA_ESTADUAL = {
     "27": "tjto",
 }
 
+INDICES_JUSTICA_MILITAR_ESTADUAL = {
+    "13": "tjmmg",
+    "21": "tjmrs",
+    "26": "tjmsp",
+}
+
 
 def indice_datajud(numero: str) -> str:
     """Retorna o indice DataJud inferido do numero CNJ, quando suportado."""
@@ -78,12 +89,23 @@ def indice_datajud(numero: str) -> str:
     segmento, tribunal = match.groups()
     if segmento == "8":
         return INDICES_JUSTICA_ESTADUAL.get(tribunal, "")
-    if segmento == "4":
-        return f"trf{int(tribunal)}"
-    if segmento == "5":
-        return f"trt{int(tribunal)}"
-    if segmento == "2":
+    if segmento == "9":
+        return INDICES_JUSTICA_MILITAR_ESTADUAL.get(tribunal, "")
+    if segmento == "6":
+        if tribunal == "00":
+            return "tse"
+        estadual = INDICES_JUSTICA_ESTADUAL.get(tribunal, "")
+        return f"tre-{estadual[2:]}" if estadual else ""
+    if segmento == "7" and tribunal == "00":
+        return "stm"
+    if segmento == "3" and tribunal == "00":
         return "stj"
+    if segmento == "5" and tribunal == "00":
+        return "tst"
+    if segmento == "4" and 1 <= int(tribunal) <= 6:
+        return f"trf{int(tribunal)}"
+    if segmento == "5" and 1 <= int(tribunal) <= 24:
+        return f"trt{int(tribunal)}"
     return ""
 
 
@@ -108,6 +130,123 @@ def datajud_api_key(api_key: str | None = None) -> str:
     return chave if chave.startswith("APIKey ") else f"APIKey {chave}"
 
 
+def _retry_after_seconds(
+    response: requests.Response,
+    *,
+    now: datetime | None = None,
+) -> float | None:
+    """Interpreta Retry-After em segundos ou data HTTP, sem aceitar valores inválidos."""
+    raw = response.headers.get("Retry-After")
+    if raw is None:
+        return None
+    valor = str(raw).strip()
+    try:
+        segundos = int(valor)
+    except ValueError:
+        try:
+            data_retentativa = parsedate_to_datetime(valor)
+        except (TypeError, ValueError, OverflowError):
+            return None
+        if data_retentativa.tzinfo is None:
+            data_retentativa = data_retentativa.replace(tzinfo=UTC)
+        instante = now or datetime.now(UTC)
+        if instante.tzinfo is None:
+            instante = instante.replace(tzinfo=UTC)
+        return max(0.0, (data_retentativa - instante).total_seconds())
+    if segundos < 0:
+        return None
+    return float(segundos)
+
+
+def _post_com_retry(
+    session: requests.Session,
+    url: str,
+    payload: dict[str, Any],
+    headers: dict[str, str],
+    *,
+    timeout: float,
+    prazo_final: float | None,
+    retry: int,
+    backoff: float,
+    sleep: Callable[[float], None],
+) -> dict[str, Any]:
+    """Executa uma página DataJud com a política de repetição comum."""
+    response: requests.Response | None = None
+    for tentativa in range(retry):
+        restante_request = None if prazo_final is None else prazo_final - time.monotonic()
+        if restante_request is not None and restante_request <= 0:
+            raise ConsultaIndisponivel("DataJud excedeu o prazo total da consulta.")
+        timeout_tentativa = timeout if restante_request is None else min(timeout, restante_request)
+        try:
+            response = session.post(
+                url,
+                json=cast(Any, payload),
+                headers=headers,
+                timeout=timeout_tentativa,
+            )
+        except requests.RequestException as exc:
+            if tentativa + 1 >= retry:
+                raise ConsultaIndisponivel(
+                    f"Falha de comunicacao com DataJud ({type(exc).__name__})."
+                ) from exc
+            espera = backoff * (tentativa + 1)
+            restante_retry = None if prazo_final is None else prazo_final - time.monotonic()
+            if restante_retry is not None and (restante_retry <= 0 or espera >= restante_retry):
+                raise ConsultaIndisponivel(
+                    "DataJud excedeu o prazo total da consulta antes do próximo retry."
+                ) from exc
+            sleep(espera)
+            continue
+
+        if prazo_final is not None and time.monotonic() >= prazo_final:
+            raise ConsultaIndisponivel("DataJud excedeu o prazo total da consulta.")
+
+        if response.status_code == 200:
+            break
+        if response.status_code in HTTP_STATUS_TRANSITORIOS and tentativa + 1 < retry:
+            espera_retry_after = _retry_after_seconds(response)
+            if espera_retry_after is None:
+                espera_retry_after = backoff * (tentativa + 1)
+            if espera_retry_after > MAX_RETRY_AFTER_SECONDS:
+                raise ConsultaIndisponivel(
+                    "DataJud solicitou aguardar mais de 60 segundos via Retry-After; "
+                    "a tentativa automática foi encerrada sem repetir a consulta."
+                )
+            restante_retry_after = None if prazo_final is None else prazo_final - time.monotonic()
+            if restante_retry_after is not None and (
+                restante_retry_after <= 0 or espera_retry_after >= restante_retry_after
+            ):
+                raise ConsultaIndisponivel(
+                    "DataJud excedeu o prazo total da consulta antes do Retry-After."
+                )
+            sleep(espera_retry_after)
+            continue
+        if response.status_code in {401, 403}:
+            raise AcessoRestrito(f"DataJud retornou HTTP {response.status_code}.")
+        raise ConsultaIndisponivel(f"DataJud retornou HTTP {response.status_code}.")
+
+    if response is None or response.status_code != 200:
+        raise ConsultaIndisponivel("DataJud nao retornou resposta valida.")
+    try:
+        body = response.json()
+    except ValueError as exc:
+        raise ConsultaIndisponivel("DataJud retornou JSON invalido.") from exc
+    if not isinstance(body, dict):
+        raise ConsultaIndisponivel("DataJud retornou JSON com estrutura inesperada.")
+    return body
+
+
+def _agregar_raw_datajud(body: dict[str, Any], hits: list[Any]) -> dict[str, Any]:
+    """Preserva o envelope bruto, agregando todas as páginas efetivamente recebidas."""
+    raw = dict(body)
+    resposta_hits = body.get("hits")
+    if isinstance(resposta_hits, dict):
+        raw_hits = dict(resposta_hits)
+        raw_hits["hits"] = hits
+        raw["hits"] = raw_hits
+    return raw
+
+
 def consultar_processo(
     numero: str,
     *,
@@ -116,11 +255,23 @@ def consultar_processo(
     include_raw: bool = False,
     session: requests.Session | None = None,
     timeout: float = 30.0,
+    prazo_total: float | None = 60.0,
     retry: int = 3,
     backoff: float = 1.0,
     sleep: Callable[[float], None] = time.sleep,
 ) -> DataJudExtraction:
-    """Consulta um processo na API publica do DataJud/CNJ."""
+    """Consulta DataJud com teto total cooperativo para retry e paginação."""
+    timeout = validar_timeout(timeout)
+    validar_prazo_total(prazo_total)
+    if isinstance(retry, bool) or not isinstance(retry, int) or retry < 1:
+        raise ValueError("retry deve ser um inteiro positivo.")
+    if (
+        isinstance(backoff, bool)
+        or not isinstance(backoff, (int, float))
+        or not math.isfinite(backoff)
+        or backoff < 0
+    ):
+        raise ValueError("backoff deve ser um número finito não negativo.")
     numero = validar_numero_cnj(numero, segmento=None, tribunal=None)
     indice_resolvido = indice or indice_datajud(numero)
     if not indice_resolvido:
@@ -130,6 +281,7 @@ def consultar_processo(
     payload: dict[str, Any] = {
         "query": {"match": {"numeroProcesso": somente_digitos(numero)}},
         "size": MAX_REGISTROS,
+        "sort": [{"@timestamp": {"order": "asc"}}],
         "_source": DEFAULT_SOURCE_FIELDS,
     }
     headers = {
@@ -138,37 +290,178 @@ def consultar_processo(
         "Accept": "application/json",
     }
     session = session or requests.Session()
+    prazo_final = time.monotonic() + prazo_total if prazo_total is not None else None
+    body = _post_com_retry(
+        session,
+        url,
+        payload,
+        headers,
+        timeout=timeout,
+        prazo_final=prazo_final,
+        retry=retry,
+        backoff=backoff,
+        sleep=sleep,
+    )
 
-    response: requests.Response | None = None
-    for tentativa in range(retry):
+    resultado = body.get("hits")
+    hits = resultado.get("hits") if isinstance(resultado, dict) else None
+    if not isinstance(hits, list):
+        raise ConsultaIndisponivel("DataJud retornou JSON com estrutura inesperada.")
+    total_hits, total_relation = _ler_total_registros(resultado)
+    if total_hits is not None and total_hits < len(hits):
+        raise ConsultaIndisponivel("DataJud retornou total menor que a quantidade de registros.")
+
+    hits_completos = list(hits)
+    ids_primeira_pagina = [
+        hit.get("_id") if isinstance(hit, dict) else None for hit in hits_completos
+    ]
+    ids_hits: set[str] = set()
+    paginas_consultadas = 1
+    aviso_paginacao = ""
+    if total_relation == "eq" and total_hits is not None and total_hits > len(hits):
+        if any(
+            not isinstance(identificador, str) or not identificador
+            for identificador in ids_primeira_pagina
+        ) or len(set(ids_primeira_pagina)) != len(ids_primeira_pagina):
+            aviso_paginacao = "DataJud não forneceu identificadores únicos na primeira página."
+        else:
+            ids_hits = set(cast(list[str], ids_primeira_pagina))
+        cursor_hit = hits[-1] if hits else None
+        cursor = cursor_hit.get("sort") if isinstance(cursor_hit, dict) else None
+        seen_cursors: set[tuple[Any, ...]] = set()
+        while (
+            not aviso_paginacao
+            and len(hits_completos) < total_hits
+            and paginas_consultadas < MAX_PAGINAS
+        ):
+            if not isinstance(cursor, list) or not cursor:
+                aviso_paginacao = "DataJud não forneceu cursor válido para continuar a paginação."
+                break
+            cursor_id = tuple(cursor)
+            if cursor_id in seen_cursors:
+                aviso_paginacao = "DataJud repetiu o cursor de paginação; coleta incompleta."
+                break
+            seen_cursors.add(cursor_id)
+            payload_pagina = {**payload, "search_after": cursor}
+            try:
+                corpo_pagina = _post_com_retry(
+                    session,
+                    url,
+                    payload_pagina,
+                    headers,
+                    timeout=timeout,
+                    prazo_final=prazo_final,
+                    retry=retry,
+                    backoff=backoff,
+                    sleep=sleep,
+                )
+            except (AcessoRestrito, ConsultaIndisponivel) as exc:
+                aviso_paginacao = (
+                    "DataJud não concluiu a paginação após a primeira página: "
+                    f"{type(exc).__name__}."
+                )
+                break
+
+            hits_resultado_pagina = corpo_pagina.get("hits")
+            hits_pagina = (
+                hits_resultado_pagina.get("hits")
+                if isinstance(hits_resultado_pagina, dict)
+                else None
+            )
+            total_pagina, relacao_pagina = _ler_total_registros(hits_resultado_pagina)
+            if (
+                not isinstance(hits_pagina, list)
+                or total_pagina != total_hits
+                or relacao_pagina != "eq"
+            ):
+                aviso_paginacao = (
+                    "DataJud alterou o total ou a estrutura durante a paginação; "
+                    "a coleta permanece parcial."
+                )
+                break
+            if not hits_pagina:
+                aviso_paginacao = "DataJud encerrou a paginação antes do total confirmado."
+                break
+            ids_pagina = [hit.get("_id") if isinstance(hit, dict) else None for hit in hits_pagina]
+            if (
+                any(
+                    not isinstance(identificador, str) or not identificador
+                    for identificador in ids_pagina
+                )
+                or len(set(ids_pagina)) != len(ids_pagina)
+                or ids_hits.intersection(cast(list[str], ids_pagina))
+            ):
+                aviso_paginacao = (
+                    "DataJud repetiu ou omitiu identificadores de registros na paginação."
+                )
+                break
+            proximo_hit = hits_pagina[-1]
+            proximo_cursor = proximo_hit.get("sort") if isinstance(proximo_hit, dict) else None
+            if (
+                not isinstance(proximo_cursor, list)
+                or not proximo_cursor
+                or proximo_cursor == cursor
+            ):
+                aviso_paginacao = "DataJud não avançou o cursor; coleta incompleta."
+                break
+            hits_completos.extend(hits_pagina)
+            ids_hits.update(cast(list[str], ids_pagina))
+            cursor = proximo_cursor
+            paginas_consultadas += 1
+        if not aviso_paginacao and len(hits_completos) < total_hits:
+            aviso_paginacao = (
+                f"DataJud atingiu o limite de {MAX_PAGINAS} páginas antes de completar a coleta; "
+                "o resultado permanece parcial."
+            )
+
+    registros_completos = (
+        total_hits == len(hits_completos) and total_relation == "eq" and not aviso_paginacao
+    )
+    metadados_registros: SourceMetadata = {
+        "records_complete": registros_completos,
+        "records_returned": len(hits_completos),
+        "total_hits": total_hits,
+        "total_relation": total_relation,
+    }
+    avisos_registros = _avisos_completude_datajud(
+        registros_completos, len(hits_completos), total_hits, total_relation
+    )
+    if aviso_paginacao:
+        avisos_registros.append(aviso_paginacao)
+
+    sources: list[dict[str, Any]] = []
+    tribunal_esperado = indice_datajud(numero).upper()
+    for hit in hits_completos:
+        source = hit.get("_source") if isinstance(hit, dict) else None
+        if not isinstance(source, dict) or not source:
+            raise ConsultaIndisponivel("DataJud retornou registro com estrutura inesperada.")
+        numero_retornado = source.get("numeroProcesso")
+        if not isinstance(numero_retornado, (str, int)) or not str(numero_retornado).strip():
+            raise ConsultaIndisponivel("DataJud retornou registro com estrutura inválida: sem CNJ.")
         try:
-            response = session.post(url, json=cast(Any, payload), headers=headers, timeout=timeout)
-        except requests.RequestException as exc:
-            if tentativa + 1 >= retry:
-                raise ConsultaIndisponivel(f"Falha de comunicacao com DataJud: {exc}") from exc
-            sleep(backoff * (tentativa + 1))
-            continue
+            numero_retornado = validar_numero_cnj(
+                str(numero_retornado), segmento=None, tribunal=None
+            )
+        except ValueError as exc:
+            raise ConsultaIndisponivel(
+                "DataJud retornou registro com estrutura inválida: CNJ inválido."
+            ) from exc
+        if numero_retornado != numero:
+            raise ConsultaIndisponivel("DataJud retornou CNJ divergente do número consultado.")
+        if tribunal_esperado:
+            tribunal_retornado = str(source.get("tribunal") or "").strip().upper()
+            if not tribunal_retornado:
+                raise ConsultaIndisponivel(
+                    "DataJud retornou registro com estrutura inválida: sem tribunal."
+                )
+            if tribunal_retornado != tribunal_esperado:
+                raise ConsultaIndisponivel(
+                    "DataJud retornou tribunal divergente do CNJ consultado."
+                )
+        sources.append(source)
 
-        if response.status_code == 200:
-            break
-        if response.status_code == 429 and tentativa + 1 < retry:
-            sleep(backoff * (tentativa + 1))
-            continue
-        if response.status_code in {401, 403}:
-            raise AcessoRestrito(f"DataJud retornou HTTP {response.status_code}.")
-        raise ConsultaIndisponivel(f"DataJud retornou HTTP {response.status_code}.")
-
-    if response is None or response.status_code != 200:
-        raise ConsultaIndisponivel("DataJud nao retornou resposta valida.")
-
-    try:
-        body = response.json()
-    except ValueError as exc:
-        raise ConsultaIndisponivel("DataJud retornou JSON invalido.") from exc
-
-    hits = ((body.get("hits") or {}).get("hits") or []) if isinstance(body, dict) else []
-    extracted_at = datetime.now(timezone.utc).isoformat()
-    if not hits:
+    extracted_at = datetime.now(UTC).isoformat()
+    if not hits and registros_completos:
         return {
             "status": "nao_encontrado",
             "numero_cnj": numero,
@@ -178,22 +471,85 @@ def consultar_processo(
                 "source_url": url,
                 "extracted_at": extracted_at,
                 "raw_available": include_raw,
+                **metadados_registros,
+                "records_pages": paginas_consultadas,
             },
-            **({"raw": body} if include_raw else {}),
+            **({"raw": _agregar_raw_datajud(body, hits_completos)} if include_raw else {}),
         }
 
-    sources = sorted(
-        (hit.get("_source") or {} for hit in hits),
-        key=lambda item: _rank_grau(str(item.get("grau") or "")),
-    )
+    if not hits:
+        return {
+            "status": "partial",
+            "numero_cnj": numero,
+            "indice": indice_resolvido,
+            "warnings": avisos_registros,
+            "metadata": {
+                "source": DATAJUD,
+                "source_url": url,
+                "extracted_at": extracted_at,
+                "raw_available": include_raw,
+                **metadados_registros,
+                "records_pages": paginas_consultadas,
+            },
+            **({"raw": _agregar_raw_datajud(body, hits_completos)} if include_raw else {}),
+        }
+
+    sources.sort(key=lambda item: _rank_grau(str(item.get("grau") or "")))
     return _normalizar_source(
         sources,
         numero=numero,
         indice=indice_resolvido,
         source_url=url,
         extracted_at=extracted_at,
-        raw=body if include_raw else None,
+        raw=_agregar_raw_datajud(body, hits_completos) if include_raw else None,
+        registros_completos=registros_completos,
+        total_hits=total_hits,
+        total_relation=total_relation,
+        avisos=avisos_registros,
+        paginas_consultadas=paginas_consultadas,
     )
+
+
+def _ler_total_registros(resultado: Any) -> tuple[int | None, str | None]:
+    if not isinstance(resultado, dict):
+        return None, None
+    total = resultado.get("total")
+    if isinstance(total, int) and not isinstance(total, bool) and total >= 0:
+        return total, "eq"
+    if not isinstance(total, dict):
+        return None, None
+    valor = total.get("value")
+    relacao = total.get("relation")
+    if (
+        isinstance(valor, bool)
+        or not isinstance(valor, int)
+        or valor < 0
+        or not isinstance(relacao, str)
+        or not relacao
+    ):
+        return None, None
+    return valor, relacao
+
+
+def _avisos_completude_datajud(
+    completo: bool,
+    registros_retornados: int,
+    total: int | None,
+    relacao: str | None,
+) -> list[str]:
+    if completo:
+        return []
+    if total is None:
+        return ["DataJud não informou o total de registros; a completude não foi confirmada."]
+    if relacao == "eq" and total > registros_retornados:
+        return [
+            f"DataJud retornou {registros_retornados} de {total} registros; "
+            "o limite da consulta pode ter truncado o resultado."
+        ]
+    return [
+        f"DataJud informou total {relacao or 'desconhecido'} de {total}; "
+        "a completude do resultado não foi confirmada."
+    ]
 
 
 def _rank_grau(grau: str) -> int:
@@ -208,6 +564,11 @@ def _normalizar_source(
     source_url: str,
     extracted_at: str,
     raw: dict[str, Any] | None,
+    registros_completos: bool,
+    total_hits: int | None,
+    total_relation: str | None,
+    avisos: list[str],
+    paginas_consultadas: int,
 ) -> DataJudExtraction:
     """Consolida os registros por grau; o primeiro (menor grau) define os dados principais."""
     source = sources[0]
@@ -223,7 +584,7 @@ def _normalizar_source(
     movimentos.sort(key=lambda mov: (not mov["data_hora"], mov["data_hora"]))
     partes = [_normalizar_parte(parte) for parte in source.get("partes") or []]
     saida: DataJudExtraction = {
-        "status": "ok",
+        "status": "ok" if registros_completos else "partial",
         "numero_cnj": numero,
         "tribunal": str(source.get("tribunal") or ""),
         "indice": indice,
@@ -234,11 +595,17 @@ def _normalizar_source(
         "graus": [_resumir_grau(item) for item in sources],
         "movimentos": movimentos,
         "partes": partes,
+        "warnings": avisos,
         "metadata": {
             "source": DATAJUD,
             "source_url": source_url,
             "extracted_at": extracted_at,
             "raw_available": raw is not None,
+            "records_complete": registros_completos,
+            "records_returned": len(sources),
+            "total_hits": total_hits,
+            "total_relation": total_relation,
+            "records_pages": paginas_consultadas,
         },
     }
     if raw is not None:
@@ -300,8 +667,11 @@ def _normalizar_parte(parte: dict[str, Any]) -> dict[str, Any]:
 
 def resumo_do_datajud(extracao: dict[str, Any]) -> ResumoProcesso:
     """Resumo objetivo a partir do DataJud, para tribunais sem consulta eSAJ."""
-    if extracao.get("status") != "ok":
+    status_extracao = extracao.get("status")
+    if status_extracao == "nao_encontrado":
         raise ProcessoNaoEncontrado("O DataJud não retornou este processo.")
+    if status_extracao not in {"ok", "partial"}:
+        raise ConsultaIndisponivel("O DataJud retornou um estado de consulta inválido.")
     movimentos = extracao.get("movimentos") or []
     ultima: dict[str, Any] = max(movimentos, key=lambda m: m.get("data_hora") or "", default={})
     data = normalizar_data(ultima.get("data"))["iso"]
@@ -309,6 +679,13 @@ def resumo_do_datajud(extracao: dict[str, Any]) -> ResumoProcesso:
     complementos = ultima.get("complementos") or ""
     titulo = str(ultima.get("nome") or "")
     assuntos = extracao.get("assuntos") or []
+    avisos = extracao.get("warnings") or []
+    metadata = extracao.get("metadata") or {}
+    mensagem = "Consulta via DataJud (processo fora do TJSP)"
+    if status_extracao == "partial":
+        mensagem = f"{mensagem}; retorno parcial"
+    if avisos:
+        mensagem = f"{mensagem}. {'; '.join(str(aviso) for aviso in avisos)}"
     return {
         "numero": extracao.get("numero_cnj", ""),
         "classe": extracao.get("classe", ""),
@@ -319,7 +696,10 @@ def resumo_do_datajud(extracao: dict[str, Any]) -> ResumoProcesso:
         "ultima_movimentacao": f"{titulo} - {complementos}" if complementos else titulo,
         "ultima_data": f"{dia}/{mes}/{ano}" if data else "",
         "url": (extracao.get("metadata") or {}).get("source_url", ""),
-        "status": "ok",
-        "mensagem": "Consulta via DataJud (processo fora do TJSP)",
+        "status": status_extracao,
+        "mensagem": mensagem,
         "fonte": "datajud",
+        "grau": str(ultima.get("grau") or extracao.get("grau") or ""),
+        "data_coleta": str(metadata.get("extracted_at") or ""),
+        "coleta_completa": metadata.get("records_complete"),
     }

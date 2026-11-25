@@ -7,7 +7,18 @@ from typing import Any, cast
 
 from .normalization import normalizar_data
 from .schemas import TimelineRecord
-from .sources import DATAJUD, DJEN, ESAJ, SourceName
+from .sources import (
+    DATAJUD,
+    DJEN,
+    EPROC_TJSP_1G,
+    EPROC_TJSP_2G,
+    ESAJ,
+    ESAJ_TJSP_2G,
+    MNI,
+    PJE_TJMG,
+    TJRJ_1G,
+    SourceName,
+)
 
 
 def build_timeline(
@@ -15,6 +26,12 @@ def build_timeline(
     esaj_extrato: dict[str, Any] | None = None,
     datajud_extracao: dict[str, Any] | None = None,
     djen_comunicacoes: list[dict[str, Any]] | None = None,
+    pje_tjmg_extracao: dict[str, Any] | None = None,
+    eproc_tjsp_1g_extracao: dict[str, Any] | None = None,
+    eproc_tjsp_2g_extracao: dict[str, Any] | None = None,
+    mni_extracao: dict[str, Any] | None = None,
+    tjrj_extracao: dict[str, Any] | None = None,
+    cposg_extracao: dict[str, Any] | None = None,
     include_payload: bool = False,
 ) -> list[TimelineRecord]:
     """Combina registros extraidos em ordem cronologica, preservando a fonte."""
@@ -22,6 +39,19 @@ def build_timeline(
     registros.extend(_timeline_esaj(esaj_extrato or {}, include_payload=include_payload))
     registros.extend(_timeline_datajud(datajud_extracao or {}, include_payload=include_payload))
     registros.extend(_timeline_djen(djen_comunicacoes or [], include_payload=include_payload))
+    registros.extend(_timeline_pje_tjmg(pje_tjmg_extracao or {}, include_payload=include_payload))
+    registros.extend(
+        _timeline_eproc_tjsp_1g(eproc_tjsp_1g_extracao or {}, include_payload=include_payload)
+    )
+    registros.extend(
+        _timeline_eproc_tjsp_2g(eproc_tjsp_2g_extracao or {}, include_payload=include_payload)
+    )
+    registros.extend(_timeline_mni(mni_extracao or {}, include_payload=include_payload))
+    registros.extend(_timeline_tjrj(tjrj_extracao or {}, include_payload=include_payload))
+    for recurso in (cposg_extracao or {}).get("resultados", []):
+        registros.extend(
+            _timeline_esaj(recurso, include_payload=include_payload, fonte=ESAJ_TJSP_2G)
+        )
     _garantir_ids_unicos(registros)
     return sorted(
         registros,
@@ -78,23 +108,28 @@ def compactar_timeline(
     return saida
 
 
-def _timeline_esaj(extrato: dict[str, Any], *, include_payload: bool) -> list[TimelineRecord]:
+def _timeline_esaj(
+    extrato: dict[str, Any], *, include_payload: bool, fonte: SourceName = ESAJ
+) -> list[TimelineRecord]:
     numero = str((extrato.get("dados_basicos") or {}).get("numero") or "")
     saida: list[TimelineRecord] = []
     for movimento in extrato.get("movimentacoes") or []:
         data = normalizar_data(movimento.get("data"))
         record: TimelineRecord = {
-            "id": _id_registro(ESAJ, numero, data["iso"], "", movimento.get("titulo") or ""),
+            "id": _id_registro(fonte, numero, data["iso"], "", movimento.get("titulo") or ""),
             "numero_cnj": numero,
             "data": data["iso"],
             "data_original": data["original"],
-            "fonte": ESAJ,
+            "fonte": fonte,
             "tipo_registro": "movimentacao",
             "codigo_original": "",
             "titulo": str(movimento.get("titulo") or ""),
             "texto": str(movimento.get("teor") or movimento.get("texto") or ""),
             "documentos": list(movimento.get("documentos") or []),
         }
+        if fonte == ESAJ_TJSP_2G:
+            record["grau"] = "2g"
+            record["url_origem"] = str(extrato.get("url") or "")
         if include_payload:
             record["payload_origem"] = movimento
         saida.append(record)
@@ -160,6 +195,78 @@ def _timeline_djen(
     return saida
 
 
+def _timeline_pje_tjmg(extrato: dict[str, Any], *, include_payload: bool) -> list[TimelineRecord]:
+    numero = str((extrato.get("dados_basicos") or {}).get("numero") or "")
+    saida: list[TimelineRecord] = []
+    for movimento in extrato.get("movimentacoes") or []:
+        data = normalizar_data(movimento.get("data") or movimento.get("data_original"))
+        titulo = str(movimento.get("titulo") or "")
+        record: TimelineRecord = {
+            "id": _id_registro(PJE_TJMG, numero, data["iso"], "", titulo),
+            "numero_cnj": numero,
+            "data": data["iso"],
+            "data_original": data["original"],
+            "fonte": PJE_TJMG,
+            "tipo_registro": "movimentacao",
+            "codigo_original": "",
+            "titulo": titulo,
+            "texto": str(movimento.get("teor") or movimento.get("texto") or ""),
+            "documentos": list(movimento.get("documentos") or []),
+        }
+        if include_payload:
+            record["payload_origem"] = movimento
+        saida.append(record)
+    return saida
+
+
+def _timeline_eproc_tjsp_1g(
+    extrato: dict[str, Any], *, include_payload: bool
+) -> list[TimelineRecord]:
+    numero = str((extrato.get("dados_basicos") or {}).get("numero") or "")
+    origem = extrato.get("origem") or {}
+    saida: list[TimelineRecord] = []
+    for movimento in extrato.get("movimentacoes") or []:
+        data = normalizar_data(movimento.get("data") or movimento.get("data_original"))
+        titulo = str(movimento.get("titulo") or "")
+        record: TimelineRecord = {
+            "id": _id_registro(
+                EPROC_TJSP_1G, numero, data["iso"], str(movimento.get("ordem") or ""), titulo
+            ),
+            "numero_cnj": numero,
+            "data": data["iso"],
+            "data_original": data["original"],
+            "fonte": EPROC_TJSP_1G,
+            "tipo_registro": "movimentacao",
+            "codigo_original": str(movimento.get("ordem") or ""),
+            "titulo": titulo,
+            "texto": str(movimento.get("teor") or ""),
+            "documentos": list(movimento.get("documentos") or []),
+            "grau": "1g",
+            "url_origem": str(origem.get("url_final") or ""),
+        }
+        if include_payload:
+            record["payload_origem"] = movimento
+        saida.append(record)
+    return saida
+
+
+def _timeline_eproc_tjsp_2g(
+    extrato: dict[str, Any], *, include_payload: bool
+) -> list[TimelineRecord]:
+    registros = _timeline_eproc_tjsp_1g(extrato, include_payload=include_payload)
+    for registro in registros:
+        registro["id"] = _id_registro(
+            EPROC_TJSP_2G,
+            str(registro.get("numero_cnj") or ""),
+            str(registro.get("data") or ""),
+            str(registro.get("codigo_original") or ""),
+            str(registro.get("titulo") or ""),
+        )
+        registro["fonte"] = EPROC_TJSP_2G
+        registro["grau"] = "2g"
+    return registros
+
+
 def _id_registro(fonte: SourceName, numero: str, data: str, codigo: str, titulo: str) -> str:
     base = "|".join([fonte, numero, data, codigo, titulo])
     return hashlib.sha1(base.encode("utf-8")).hexdigest()
@@ -168,8 +275,71 @@ def _id_registro(fonte: SourceName, numero: str, data: str, codigo: str, titulo:
 def _source_order(fonte: object) -> int:
     if fonte == DATAJUD:
         return 0
-    if fonte == ESAJ:
+    if fonte in (ESAJ, ESAJ_TJSP_2G):
         return 1
     if fonte == DJEN:
+        return 3
+    if fonte == PJE_TJMG:
+        return 2
+    if fonte == MNI:
+        return 4
+    if fonte == TJRJ_1G:
         return 2
     return 99
+
+
+def _timeline_mni(extrato: dict[str, Any], *, include_payload: bool) -> list[TimelineRecord]:
+    numero = str((extrato.get("dados_basicos") or {}).get("numero") or "")
+    origem = extrato.get("origem") or {}
+    saida: list[TimelineRecord] = []
+    for movimento in extrato.get("movimentacoes") or []:
+        metadados = movimento.get("metadados") or {}
+        data = normalizar_data(movimento.get("data"))
+        codigo = str(metadados.get("codigo_nacional") or metadados.get("codigo_local") or "")
+        titulo = str(movimento.get("titulo") or "")
+        record: TimelineRecord = {
+            "id": _id_registro(MNI, numero, data["iso"], codigo, titulo),
+            "numero_cnj": numero,
+            "data": data["iso"],
+            "data_original": str(movimento.get("data_original") or data["original"]),
+            "fonte": MNI,
+            "tipo_registro": "movimentacao",
+            "codigo_original": codigo,
+            "titulo": titulo,
+            "texto": str(movimento.get("teor") or ""),
+            "documentos": list(movimento.get("documentos") or []),
+        }
+        if origem.get("grau"):
+            record["grau"] = str(origem["grau"])
+        if include_payload:
+            record["payload_origem"] = movimento
+        saida.append(record)
+    return saida
+
+
+def _timeline_tjrj(extrato: dict[str, Any], *, include_payload: bool) -> list[TimelineRecord]:
+    numero = str((extrato.get("dados_basicos") or {}).get("numero") or "")
+    origem = extrato.get("origem") or {}
+    saida: list[TimelineRecord] = []
+    for movimento in extrato.get("movimentacoes") or []:
+        data = normalizar_data(movimento.get("data") or movimento.get("data_original"))
+        titulo = str(movimento.get("titulo") or "")
+        codigo = str(movimento.get("ordem") or "")
+        record: TimelineRecord = {
+            "id": _id_registro(TJRJ_1G, numero, data["iso"], codigo, titulo),
+            "numero_cnj": numero,
+            "data": data["iso"],
+            "data_original": data["original"],
+            "fonte": TJRJ_1G,
+            "tipo_registro": "movimentacao",
+            "codigo_original": codigo,
+            "titulo": titulo,
+            "texto": str(movimento.get("teor") or ""),
+            "documentos": list(movimento.get("documentos") or []),
+            "grau": "1g",
+            "url_origem": str(origem.get("url_final") or ""),
+        }
+        if include_payload:
+            record["payload_origem"] = movimento
+        saida.append(record)
+    return saida

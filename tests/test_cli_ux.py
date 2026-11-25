@@ -1,5 +1,7 @@
+import os
 import subprocess
 import sys
+from pathlib import Path
 
 import pytest
 
@@ -7,11 +9,24 @@ from nanojud import cli, formatacao
 from nanojud.exceptions import ConsultaIndisponivel, FormatoCNJInvalido, ProcessoNaoEncontrado
 
 TJSP = "1076539-20.2019.8.26.0100"
+ROOT = Path(__file__).parents[1]
+
+
+def _ambiente_checkout():
+    ambiente = os.environ.copy()
+    src = str(ROOT / "src")
+    anterior = ambiente.get("PYTHONPATH")
+    ambiente["PYTHONPATH"] = os.pathsep.join(filter(None, (src, anterior)))
+    return ambiente
 
 
 def _rodar(*args):
     return subprocess.run(
-        [sys.executable, "-m", "nanojud", *args], capture_output=True, text=True, encoding="utf-8"
+        [sys.executable, "-m", "nanojud", *args],
+        env=_ambiente_checkout(),
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
     )
 
 
@@ -23,6 +38,20 @@ def test_python_m_nanojud_funciona_e_mostra_versao():
 
     assert resultado.returncode == 0
     assert resultado.stdout.startswith("nanojud ")
+
+
+def test_subprocesso_cli_importa_o_checkout_atual():
+    resultado = subprocess.run(
+        [sys.executable, "-c", "import nanojud; print(nanojud.__file__)"],
+        env=_ambiente_checkout(),
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+
+    assert resultado.returncode == 0
+    esperado = (ROOT / "src" / "nanojud" / "__init__.py").resolve()
+    assert Path(resultado.stdout.strip()).resolve() == esperado
 
 
 def test_ajuda_em_portugues_com_exemplos():
@@ -98,6 +127,11 @@ def _resumo():
         "ultima_data": "10/01/2026",
         "url": "https://esaj.tjsp.jus.br/x",
         "fonte": "esaj",
+        "grau": "1g",
+        "data_coleta": "2026-11-13T21:00:00+00:00",
+        "coleta_completa": False,
+        "status": "partial",
+        "mensagem": "A paginação foi interrompida.",
     }
 
 
@@ -110,6 +144,10 @@ def test_search_em_texto_e_legivel(monkeypatch, capsys):
     assert "Processo 1076539-20.2019.8.26.0100" in saida
     assert "Situação:" in saida and "Extinto" in saida
     assert "Última movimentação:" in saida and "10/01/2026" in saida
+    assert "Fonte:" in saida and "Grau:" in saida
+    assert "Data da coleta:" in saida and "Coleta completa:" in saida
+    assert "Estado da coleta:" in saida and "parcial" in saida
+    assert "Aviso:" in saida and "paginação foi interrompida" in saida
     assert "{" not in saida  # nada de JSON
 
 
@@ -118,7 +156,11 @@ def test_search_redirecionado_continua_json(monkeypatch, capsys):
 
     cli.main(["consultar", TJSP])  # pytest captura a saída: não é terminal
 
-    assert '"classe": "Procedimento Comum"' in capsys.readouterr().out
+    saida = capsys.readouterr().out
+    assert '"classe": "Procedimento Comum"' in saida
+    assert '"fonte": "esaj"' in saida
+    assert '"grau": "1g"' in saida
+    assert '"coleta_completa": false' in saida
 
 
 def test_formato_auto_usa_texto_no_terminal(monkeypatch, capsys):
@@ -163,10 +205,21 @@ def test_timeline_em_texto_usa_data_brasileira_e_fonte():
             {"data": "2026-08-18", "fonte": "datajud", "grau": "G1", "titulo": "Remessa"},
         ]
     )
-
     assert "23/08/2026" in texto and "eSAJ" in texto
     assert "DataJud G1" in texto
     assert "2 evento(s)" in texto
+
+
+def test_timeline_texto_alerta_quando_fonte_entrega_caractere_substituido():
+    texto = formatacao.texto_timeline(
+        [{"data": "2026-01-01", "fonte": "djen", "titulo": "Publicação", "texto": "C\ufffdvel"}]
+    )
+    assert "caracteres substituídos na fonte" in texto
+
+
+def test_comunicacoes_texto_alerta_quando_fonte_entrega_caractere_substituido():
+    texto = formatacao.texto_comunicacoes([{"texto": "C\ufffdvel"}])
+    assert "caracteres substituídos na fonte" in texto
 
 
 def test_timeline_vazia_explica():
@@ -269,6 +322,21 @@ def test_linha_do_tempo_nao_avisa_do_corte_que_a_propria_cli_escolheu(monkeypatc
     assert "Movimentações limitadas" not in capsys.readouterr().out
 
 
+def test_linha_do_tempo_anuncia_as_fontes_selecionadas(monkeypatch, capsys):
+    avisos = []
+    monkeypatch.setattr(cli, "_avisar", avisos.append)
+    monkeypatch.setattr(
+        cli.api,
+        "extract_process",
+        lambda numero, **kw: {"timeline": [], "warnings": [], "errors": []},
+    )
+
+    cli.main(["timeline", TJSP, "--source", "esaj", "--formato", "json"])
+
+    capsys.readouterr()
+    assert avisos == ["Consultando fontes selecionadas: esaj... (até 1 minuto)"]
+
+
 def test_mensagens_de_arquivo_gravado_concordam_em_genero(monkeypatch, capsys, tmp_path):
     monkeypatch.setattr(cli.api, "get_partes", lambda numero: {})
     destino = tmp_path / "partes.txt"
@@ -306,3 +374,31 @@ def test_ler_pecas_sem_leitor_de_pdf_diz_como_instalar(monkeypatch):
 
     assert leitura[0]["status"] == "pdf_parser_indisponivel"
     assert "nanojud[pdf]" in leitura[0]["mensagem"]
+
+
+def test_ler_pecas_com_senha_reusa_sessao(monkeypatch, tmp_path):
+    from nanojud import cli
+
+    numero = "1076539-20.2019.8.26.0100"
+    extrato = {"dados_basicos": {"numero": numero}}
+    entrada = tmp_path / "extrato.json"
+    entrada.write_text('{"dados_basicos":{"numero":"' + numero + '"}}', encoding="utf-8")
+    sessoes = []
+
+    def obter(numero_recebido, *, session, senha_processo, limite_movimentacoes, timeout):
+        assert numero_recebido == numero
+        assert senha_processo == "senha-de-teste"
+        assert limite_movimentacoes is None
+        assert timeout == 30.0
+        sessoes.append(session)
+        return extrato
+
+    def ler(extrato_recebido, *, session, **kwargs):
+        assert extrato_recebido is extrato
+        assert session is sessoes[0] and session is not None
+        return []
+
+    monkeypatch.setattr(cli, "getpass", lambda _: "senha-de-teste")
+    monkeypatch.setattr(cli.api, "get_extrato", obter)
+    monkeypatch.setattr(cli.api, "ler_pecas", ler)
+    assert cli.main(["ler-pecas", str(entrada), "--pedir-senha-processo"]) == 0

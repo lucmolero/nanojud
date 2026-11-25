@@ -1,70 +1,61 @@
 # Roadmap
 
-Este roadmap organiza a evolução do projeto em entregas pequenas, verificáveis e úteis para usuários jurídicos.
+A NanoJud evolui por **fonte, instalação, grau e capacidade**. O número CNJ identifica o processo, mas não determina sozinho qual sistema guarda o acervo atual. A consulta nacional complementa os portais e conserva sua própria proveniência. A matriz de cobertura publicada em [Fontes](fontes.md) deve ser usada para decidir o que é possível consultar em cada versão.
 
-## Entregue em 0.2
+## Plano de desenvolvimento atual
 
-- Exceções públicas para erros previstos.
-- Contratos tipados com `TypedDict`.
-- Validação CNJ com dígito verificador.
-- Parser ampliado de eSAJ/TJSP.
-- DJEN com paginação, retry, backoff e testes sem rede.
-- CLI com erros em JSON, inspeção de peças e comando `baixar`.
-- Documentação de arquitetura, contratos, erros e fixtures.
-- CI com testes, cobertura, lint, formatação, build e validação de metadados.
+1. Consolidar consultas, estados parciais, proveniência, leitura de documentos e exportação nas interfaces Python, CLI e MCP.
+2. Completar a cobertura de SP por grau e sistema. e-SAJ/TJSP e eproc/TJSP são integrações separadas; cada uma precisa de validação própria de consulta e peças.
+3. Ampliar RJ por 1º e 2º graus, separando consulta pública, acervo documental e modos autenticados.
+4. Ampliar MG por 1º e 2º graus, distinguindo PJe, eproc e sistemas legados.
+5. Continuar DataJud e DJEN como fontes nacionais independentes, sem restringi-las à sequência estadual.
 
-## Entregue em 0.3
+A ordem expressa prioridade de produto, não disponibilidade já comprovada. Uma fonte só entra na cobertura anunciada depois de consulta no artefato distribuído, identidade exata, verificação de paginação e descrição dos limites documentais.
 
-- Cliente configurável `NanoJudClient`.
-- Configuração pública `NanoJudConfig`.
-- Timeout padrão aplicado às chamadas HTTP.
-- Rate limit simples por sessão.
-- Cache JSON local, opt-in e com TTL.
-- Pacote marcado como tipado com `py.typed`.
-- Checagem `mypy` no CI.
-- Site MkDocs Material.
-- GitHub Pages preparado para publicação da documentação.
-- CodeQL preparado para upload de resultados em Code Scanning.
-- Workflow de release para tags `v*`.
-- Documentos de metodologia, reprodutibilidade, LGPD, modelo de ameaças e governança.
-- Arquivo `CITATION.cff` para uso acadêmico e institucional.
-- Gate mínimo de cobertura elevado para 90%.
+## Taxonomia e alcance das fontes
 
-## Entregue em 0.4
+O inventário de segmentos e famílias de sistemas está em [Mapa nacional](mapa-nacional.md); a tabela abaixo define a separação arquitetural usada pelo produto.
 
-- Cliente DataJud/CNJ separado do DJEN, com chave pública fallback, retry, backoff e normalização.
-- Envelope versionado de extração por fonte.
-- Timeline cronológica sem interpretação jurídica.
-- Exportadores JSON, JSONL, CSV e SQLite.
-- Documentação de fontes, contratos e extração agregada.
+### Famílias de fontes
 
-## Entregue em 0.5
+| Tipo | Integrações | Alcance |
+| --- | --- | --- |
+| Nacional | DataJud, DJEN | DataJud fornece metadados e movimentos conforme o alias e a atualização de cada tribunal. DJEN fornece comunicações processuais. Nenhuma das duas equivale aos autos do portal. |
+| Protocolo por instalação | MNI 3.0 e 2.2.2 | O TJRJ publica serviço MNI e manual de consulta processual; o manual técnico exige login/senha provisionados para toda transmissão. A página institucional lista `www12.tjrj.jus.br/MNI/Servico.svc`, enquanto o manual técnico identifica outro host para produção. Confirmar o endpoint vigente antes de configurar. O contrato não comprova operação live. O cartão oficial do MNI-DCP também documenta o campo `situacaoprocesso` para distinguir processos ativos, baixados e migrados para eproc; confirmar seu wire format e preservar esse estado na normalização antes de integrar o roteamento. O TJRJ registra uma integração MNI x eproc 2G concluída em relatório de projeto e lista comunicações do eproc a instituições externas via DJE ou MNI; são evidências de integração/comunicação institucional, não de consulta externa de processos. Modelar a instalação e finalidade separadamente e não promover cobertura sem prova de consulta. |
+| Portais | e-SAJ, eproc, PJe e consultas do TJRJ | O TJRJ mantém eproc 1G/2G e acervos legados em coexistência/migração; cada tribunal, sistema de origem, grau, unidade e modo de acesso requer validação própria. |
 
-- Servidor MCP local por `stdio`.
-- Extra opcional `mcp`.
-- Entry point `nanojud-mcp`.
-- Ferramentas MCP somente leitura para validação CNJ, eSAJ, DataJud, DJEN, extração agregada e timeline.
-- Testes reais manuais com eSAJ, DataJud, DJEN e MCP local.
-- Guia de distribuição PyPI com instalação `nanojud[mcp]`.
-- Workflow de publicação em TestPyPI para ensaio de release.
-- Workflow de publicação em PyPI com Trusted Publishing.
+Resultados de fontes diferentes para o mesmo CNJ são preservados com origem, data e estado. Resposta vazia de uma fonte não demonstra inexistência do processo em outra.
 
-## Próximas prioridades
+## Matriz de tribunais e graus
 
-- Configurar Trusted Publisher no PyPI/TestPyPI e executar a primeira publicação oficial.
-- Ampliar fixtures sanitizadas com cenários reais de falha do eSAJ.
-- Medir cobertura em badge público.
-- Adicionar matriz de compatibilidade por tribunal/fonte.
-- Adicionar testes live opcionais para DataJud, DJEN e MCP local.
-- Reduzir gradualmente o `ignore_errors` do `mypy` no parser eSAJ.
-- Aumentar cobertura incrementalmente para 95% com foco em branches críticos do parser.
+| Tribunal e grau | Situação de desenvolvimento | Próxima evidência necessária |
+| --- | --- | --- |
+| TJSP 1G | Cinco amostras positivas e-SAJ; CNJ de recurso confirmado no CPoSG consultado pelo CPoPG 1G retornou `ProcessoNaoEncontrado`. eproc segue a entrada do manual oficial (portal → Consulta Unificada → formulário), mas a revalidação live terminou em `AcessoRestrito` | Manter e-SAJ/eproc separados; o resultado cruzado é negativo apenas para a instalação 1G; revalidar eproc quando a resposta pública for conferível |
+| TJSP 2G | e-SAJ consultado em cinco CNJs catalogados; quatro capas exatas confirmaram três órgãos julgadores e duas classes. PDFs individuais vinculados foram observados em amostras. eproc segue a raiz pública e o botão EPROC até o formulário direto; revalidação terminou em `AcessoRestrito` | Manter e-SAJ/eproc separados; ampliar amostras e validar identidade, paginação e vínculo documental no wheel final. eproc segue fora da cobertura operacional até resultado ponta a ponta |
+| TJRJ · Consulta Pública SPA/API 1G | Sete amostras positivas confirmaram identidade, grau e paginação completa em 13/11/2026; a amostra de 2G `0086630-88.2022.8.19.0000` não foi localizada como origem 1G pelo fluxo normal. Caso positivo `0184264-47.2023.8.19.0001` retornou 76 movimentos completos. O detalhe da API não traz identificador de peça. O visualizador oficial pede senha provisória ou Portal de Serviços | Busca e movimentos estão comprovados nesta instalação/caminho da SPA; o teste cruzado demonstra apenas que esta amostra 2G não foi encontrada na busca de origem 1G. Isso não prova inexistência em TJRJ nem cobertura eproc/TJRJ 1G. Implementar documentos exige fluxo explícito de credencial/sessão do chamador, validação do vínculo arquivo-processo e tratamento efêmero do segredo. Índice e arquivo individual seguem fora da cobertura até prova autenticada e live |
+| TJRJ eproc 1G | Entrada oficial `https://eproc1g.tjrj.jus.br/eproc/` identificada; o link “Consulta Pública de Processos” redirecionou ao host `eproc1g-cp.tjrj.jus.br`, com HTTP 403 tanto no Chromium REA quanto em GET comum via `requests`. Nenhum CNJ foi submetido | Revalidar se o fluxo público normal voltar a disponibilizar o formulário; o resultado atual é limitado a clientes/janela desta observação. Validar identidade, grau, movimentos, paginação e documentos em amostra própria |
+| TJRJ Consulta Processual pública · busca 2G | SPA oficial retornou CNJ exato e `tipoProcesso=2` para duas amostras (`0086630-88.2022.8.19.0000` e `0025949-50.2025.8.19.0000`). Em ambas, o detalhe apontou para eJUD sem confirmar o CNJ; na segunda amostra, movimentos receberam HTTP 412 | Contar somente como busca/roteamento em duas amostras; extratos confirmados: zero. Sem identidade de capa, movimentos ou paginação, não há cobertura processual nem documental. eJUD legado, PJe 2G e eproc 2G seguem linhas separadas |
+| TJRJ Projudi/VEP legado | O formulário público aceita consulta por número em “Segunda Instância”; uma consulta normal ao caso `0086630-88.2022.8.19.0000`, encaminhado pela SPA para eJUD, retornou “Nenhum registro encontrado”. Manuais oficiais identificam Projudi como sistema da Vara de Execuções Penais | Manter como candidato legado restrito ao acervo que possa ser atribuído à VEP. Antes de integrar, localizar amostra oficial dessa origem e confirmar identidade e histórico no próprio Projudi; o resultado negativo de um caso eJUD não prova ausência em outras fontes |
+| TJRJ eproc 2G | Ato oficial de março de 2026 considera o eproc plataforma oficial para feitos de 2º grau; entrada `https://eproc2g.tjrj.jus.br/eproc/` identificada. O link de consulta pública redirecionou a `eproc2g-cp.tjrj.jus.br`, que respondeu HTTP 403 no Chromium REA e em GET comum via `requests`; nenhum formulário apareceu nem CNJ foi submetido | Priorizar esta instalação na trilha RJ 2G. Resultado limitado a clientes/janela da observação; revalidar quando o fluxo público normal disponibilizar o formulário. Manter separado do eJUD legado e do PJe 2G durante a coexistência |
+| TJRJ eJUD 2G (legado) | URL encaminhada pela SPA respondeu HTTP 200 com título de resultado, mas o HTML continha marcador de CAPTCHA e não confirmou CNJ nem tabela de resultados/movimentos | Retomar quando o fluxo oficial disponibilizar resposta conferível após o desafio; validar 3 CNJs, identidade e paginação, sem reutilizar contrato 1G |
+| TJRJ PJe 2G (legado) | Formulário oficial identificado; GET do cliente HTTP retornou página, mas REA recebeu 403 no navegador antes de exibir o formulário. O TJRJ informa coexistência e migração gradual para eproc | Aplicar somente a processos que permaneçam nessa origem; revalidar em sessão pública normal e conferir identidade/paginação antes de incluir cobertura. Não presumir que todo CNJ 2G esteja no PJe ou eJUD |
+| TJMG 1G/PJe | PJe consultado em amostras; índice e PDF individual observados via Python e MCP no wheel 0.6.0. O acervo apto está em migração gradual para eproc | Preservar prova do acervo ainda em PJe; selecionar eproc por unidade/data/classe e validar como instalação separada |
+| TJMG 1G/eproc | Formulário público oficial observado; uma submissão com campo de confirmação vazio não retornou CNJ nem extrato. A norma TJMG prevê consulta pública de dados básicos e decisões, sem teor das peças juntadas por usuários externos. Advogado cadastrado e autenticado pode consultar o inteiro teor de processo sem segredo; processo/documento também pode ser acessado por chave própria | Retomar a validação após a etapa de confirmação ou em sessão autenticada com credencial fornecida pelo chamador; conferir identidade, movimentos e paginação. Não inferir que o PJe deixou de conter processos; modelar acesso público, perfil e chave como modos distintos |
+| TJMG 2G/eproc | A consulta pública de produção foi identificada. O candidato `2040810-72.2025.8.13.0000`, listado no rastreador oficial como “Nº Eproc 2G”, retornou “Nenhum registro encontrado”, restrito à consulta. Outro candidato, `2042391-25.2025.8.13.0000`, teve CNJ validado, mas a confirmação visual não foi concluída. A Portaria Conjunta 1.770/2026 delimita o roteamento por origem, unidade e ciclo; a Portaria 1.720 consolidada descreve os mesmos níveis de consulta pública, autenticada e por chave | Obter outra amostra atribuível ou validar a amostra após a confirmação; testar identidade, grau, dados básicos e movimentos antes de promover cobertura. Para peças, validar separadamente o perfil autenticado/chave e a completude. Não inferir inexistência pela consulta individual negativa |
+| TJMG 2G · consulta pública massiva legada | O portal oficial encaminha “Consulta Pública” a `www4.tjmg.jus.br/juridico/sf/proc_massiva2.jsp`. A Evidence REA associada ao relato pós-desafio ainda mostra a tela do desafio e não contém identidade ou extrato; tabela histórica, HTTP 401 e vínculo de decisão descritos anteriormente não têm captura pós-interação recuperável nesta auditoria | Próxima prova: reter por REA o resultado pós-interação e confirmar CNJ/TJMG/2G; em seguida caracterizar tabela, sessão e vínculo documental. Sem essa prova, não integrar nem promover capacidade. A rota continua distinta de JPe e eproc; não automatizar a resolução do desafio |
+| TJMG 2G · detalhe legado por identificador | Uma consulta confirmou movimentos, capa e partes; em outra amostra, a página de movimentos publicou link `downloadPeca2` e o endpoint oficial retornou um arquivo DOC de 107.520 bytes sem autenticação/cookie fornecido. Python e MCP agora expõem obtenção individual após revalidar CNJ, identificador e vínculo, com limite de 8 MiB e validação MIME/assinatura | Manter separado da consulta massiva, JPe e eproc. A ferramenta exige `listaProcessos` interno; CNJ não basta para derivar o sequencial. A evidência de uma peça não comprova índice completo, paginação nem autos completos. Validar o contrato em outra amostra e não transferir essa evidência às demais instalações |
+| TJMG 2G/JPe-Themis | Portal oficial distinto, com login por senha, certificado digital ou credencial PJe; página institucional descreve autocadastramento de advogados. A consulta pública do portal encaminha à rota massiva legada, não comprova busca no JPe-Themis autenticado | Manter JPe-Themis e consulta massiva como instalações/capacidades separadas. Só validar consulta autenticada em sessão do chamador e amostra atribuída ao JPe; documentar o escopo concedido pela sessão. Não inferir cobertura do JPe pela rota pública legada |
+| TJMG · Consulta Processual Unificada | Entrada oficial de produção localizada (`consulta.tjmg.jus.br`); tela de filtros observada por REA, mas sessão sem autenticação terminou com `error=login_required`. Escopo inicial anunciado em homologação: PJe, PJe-TR, eproc 1G/2G e SIAP | Verificar documentação oficial de acesso e se existe consulta pública sem login. Só submeter amostra pública se a UI oferecer esse fluxo; documentar fonte/identidade retornadas. Tratar como agregador próprio, sem substituir ou restringir os adaptadores diretos |
 
-## Critério de qualidade
+Esta tabela mostra desenvolvimento, não uma garantia de disponibilidade contínua. Turmas Recursais, migrações e acervos residuais devem ter linhas próprias quando forem integrados. Em MG, o roteamento não pode ser inferido apenas pelo tribunal ou número CNJ: depende do sistema de origem, unidade/competência, ciclo de implantação e migração. As Portarias Conjuntas TJMG 1.720/2025 (consolidada), 1.770/2026 e 1.868/2026 documentam, respectivamente, acesso público/autenticado/por chave e cautelas contra consulta robotizada prejudicial, separação eproc/JPe no 2G para o escopo regulado e migração gradual do acervo PJe de 1G para eproc. A norma não proíbe toda automação: a implementação deve evitar carga que comprometa disponibilidade, estabilidade ou segurança, com concorrência e frequência limitadas, deduplicação, cache e backoff. A consulta unificada é uma rota agregadora adicional, não prova que todos os acervos estejam acessíveis ou sejam completos. O acesso a capa/movimentos, índice de peças, download individual e autos completos recebe aceite separado.
 
-Uma funcionalidade só deve ser apresentada como pronta quando tiver:
+## Critérios de aceitação por integração
 
-- contrato documentado;
-- teste automatizado;
-- exemplo de uso;
-- comportamento de erro compreensível;
-- limite conhecido declarado.
+- Confirmar número, tribunal, instalação e grau pela resposta da própria fonte; registrar data e escopo da amostra.
+- Verificar início e fim da paginação, limite, falha tardia e preservação dos dados já obtidos. `complete` exige evidência de término.
+- Distinguir processo não encontrado naquela fonte, resposta incompleta, indisponibilidade, autenticação e migração.
+- Para cada documento, conferir que ID do índice, arquivo retornado e metadados correspondem. Autos completos exigem reconciliação do índice e dos arquivos no escopo consultado.
+- Reproduzir as jornadas anunciadas em Python, CLI e MCP no pacote instalado, com exemplos curtos e estados úteis.
+- Medir latência e volume em casos representativos antes de apresentar processamento em lote como capacidade escalável.
+
+O [guia de instalação](quickstart.md), a [referência de fontes](fontes.md) e as [notas de versão](release-notes-v0.6.0.md) devem descrever apenas as capacidades verificadas na versão distribuída.

@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Literal, TypedDict
-
-from typing_extensions import NotRequired
+from typing import Any, Literal, NotRequired, TypedDict
 
 from .sources import SourceName
 
@@ -18,6 +16,11 @@ class SourceMetadata(TypedDict, total=False):
     source_url: str
     extracted_at: str
     raw_available: bool
+    records_complete: bool
+    records_returned: int
+    records_pages: int
+    total_hits: int | None
+    total_relation: str | None
 
 
 class ExtractionError(TypedDict):
@@ -45,12 +48,13 @@ class TimelineRecord(TypedDict, total=False):
     texto: str
     texto_truncado: bool
     grau: str
+    url_origem: str
     documentos: list[dict[str, Any]]
     payload_origem: dict[str, Any]
 
 
 class DataJudExtraction(TypedDict, total=False):
-    status: Literal["ok", "nao_encontrado"]
+    status: Literal["ok", "partial", "nao_encontrado"]
     numero_cnj: str
     tribunal: str
     indice: str
@@ -61,6 +65,7 @@ class DataJudExtraction(TypedDict, total=False):
     assuntos: list[dict[str, Any]]
     movimentos: list[dict[str, Any]]
     partes: list[dict[str, Any]]
+    warnings: list[str]
     raw: dict[str, Any]
     metadata: SourceMetadata
 

@@ -2,14 +2,9 @@
 
 `nanojud` é uma ferramenta para organizar informações públicas ou legitimamente acessíveis pelo usuário. O projeto deve ser usado com cuidado jurídico, técnico e ético.
 
-## O que o projeto não faz
+## Escopo do acesso
 
-- Não burla captcha.
-- Não acessa processos em segredo de justiça sem autorização.
-- Não contorna login, senha ou restrições técnicas.
-- Não garante que a fonte consultada esteja sempre disponível ou completa.
-- Não substitui conferência profissional no sistema oficial.
-- Não deve ser usado para volume agressivo de consultas.
+Cada fonte informa as capacidades disponíveis e os requisitos da sessão. A posse de uma senha ou credencial não altera as permissões concedidas pelo tribunal. Uma consulta pode retornar dados parciais, indisponibilidade ou exigência de autenticação; esses estados devem ser preservados em relatórios e automações.
 
 ## Recomendações
 

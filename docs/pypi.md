@@ -1,121 +1,33 @@
-# PyPI e MCP
+# Distribuição e publicação
 
-Esta pagina define o modelo oficial de distribuicao do NanoJud no PyPI.
-
-## Pacotes publicados
-
-O projeto publica um unico pacote:
-
-```text
-nanojud
-```
-
-Esse pacote entrega tres formas de uso:
-
-- biblioteca Python: `import nanojud`;
-- CLI: `nanojud`;
-- servidor MCP local opcional: `nanojud-mcp`.
-
-## Instalacao para usuarios
-
-Biblioteca e CLI:
+A NanoJud é distribuída como um pacote Python: `nanojud`. A instalação básica fornece biblioteca e CLI; o extra `mcp` fornece o servidor local `nanojud-mcp`, e o extra `pdf` adiciona leitura opcional de PDFs.
 
 ```bash
-python -m pip install nanojud
-```
-
-Biblioteca, CLI e MCP:
-
-```bash
-python -m pip install "nanojud[mcp]"
-```
-
-Validacao:
-
-```bash
+python -m pip install "nanojud[mcp,pdf]"
 python -c "import nanojud; print(nanojud.__version__)"
-nanojud --help
-nanojud-mcp
 ```
 
-## MCP direto com uvx
+O comando acima instala a versão disponível no [PyPI](https://pypi.org/project/nanojud/). Em 13/11/2026, a versão publicada era 0.5.1; o código 0.6.0 deste repositório ainda era candidato. Use o [quickstart](quickstart.md) para testar essa candidata antes do lançamento.
 
-Para agentes e clientes MCP, o caminho mais simples e executar o servidor direto do pacote publicado:
+## Servidor MCP
+
+Clientes que aceitam `uvx` podem iniciar a versão publicada por `stdio`:
 
 ```bash
 uvx --from "nanojud[mcp]" nanojud-mcp
 ```
 
-Configuracao MCP:
+Para usar a candidata, aponte o cliente para o Python do ambiente virtual criado no checkout. A configuração está em [instalação com IA](instalacao-com-ia.md).
 
-```json
-{
-  "mcpServers": {
-    "nanojud": {
-      "command": "uvx",
-      "args": ["--from", "nanojud[mcp]", "nanojud-mcp"]
-    }
-  }
-}
-```
+## Procedimento de lançamento
 
-Esse modelo evita clonar repositorio para uso comum. Clone local fica reservado para contribuicao, auditoria ou desenvolvimento.
+Esta seção é um roteiro de publicação; não indica que a versão 0.6.0 já foi aprovada ou publicada.
 
-## Publicacao por Trusted Publishing
+1. Fechar a [matriz de cobertura](fontes.md) com as capacidades verificadas no código e no pacote final.
+2. Alinhar versão, faixa de Python, notas de versão, README, site e metadados do pacote.
+3. Executar os gates de testes, tipos, lint, documentação e dependências na árvore final, incluindo CI Linux na faixa suportada.
+4. Construir wheel e sdist, executar `twine check`, instalar o wheel em ambiente limpo e repetir os exemplos de Python, CLI e MCP.
+5. Verificar o pacote no TestPyPI e conferir versão, extras, comandos e ferramentas MCP instalados a partir dele.
+6. Publicar no PyPI pelo fluxo configurado, instalar a versão pública em ambiente limpo e conferir site, links e notas de versão.
 
-O fluxo recomendado e Trusted Publishing via GitHub Actions/OIDC. Isso evita salvar token longo do PyPI no GitHub.
-
-Configuracao no PyPI:
-
-- Project name: `nanojud`
-- Owner: `lucmolero`
-- Repository: `nanojud`
-- Workflow filename: `publish-pypi.yml`
-- Environment name: `pypi`
-
-Configuracao no TestPyPI:
-
-- Project name: `nanojud`
-- Owner: `lucmolero`
-- Repository: `nanojud`
-- Workflow filename: `publish-testpypi.yml`
-- Environment name: `testpypi`
-
-## Ordem de release
-
-1. Atualizar versao em `pyproject.toml` e `src/nanojud/version.py`.
-2. Atualizar `CHANGELOG.md` e release notes.
-3. Rodar os checks locais:
-
-```bash
-python -m pytest --cov
-python -m ruff check src tests
-python -m ruff format --check src tests
-python -m mypy src
-python -m build
-python -m twine check dist/*
-```
-
-4. Publicar primeiro no TestPyPI pelo workflow `Publish TestPyPI`.
-5. Testar instalacao isolada:
-
-```bash
-python -m pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ "nanojud[mcp]"
-```
-
-6. Publicar no PyPI pelo workflow manual `Publish PyPI`.
-7. Testar instalacao final:
-
-```bash
-python -m pip install "nanojud[mcp]"
-nanojud --help
-nanojud-mcp
-```
-
-## Observacoes importantes
-
-- Uma versao publicada no PyPI nao pode ser sobrescrita.
-- Se um upload falhar depois de criar a versao, incremente a versao antes de tentar novamente.
-- O MCP nao e outro pacote separado nesta fase; ele e um extra opcional do pacote `nanojud`.
-- O servidor MCP local usa `stdio`, nao abre porta HTTP e nao hospeda dados em nuvem.
-- A GitHub Release deve ser criada por tag `v*`; o upload PyPI fica manual para evitar republicacao acidental da mesma versao.
+O fluxo do repositório usa publicação confiável via GitHub Actions e OIDC. A versão publicada no PyPI é imutável; se houver correção após a publicação, ela requer nova versão. Os gates técnicos locais da candidata 0.6.0 passaram; a revisão editorial final, a validação no TestPyPI e a publicação ainda estão pendentes. Consulte as [notas da 0.6.0](release-notes-v0.6.0.md) para o escopo candidato.

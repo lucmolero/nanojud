@@ -29,7 +29,7 @@ Retorna `ResumoProcesso`:
 Retorna `Extrato` com:
 
 - `origem`: fonte, tribunal, URL final e data da coleta, além de `movimentacoes_completas` e `aviso_movimentacoes` (corte por limite ou falha parcial na paginação).
-- `dados_basicos`: número, classe, assunto, foro, vara, juiz, `situacao` (ex.: Extinto), `etiquetas` do cabeçalho e campos auxiliares.
+- `dados_basicos`: número, classe, assunto, `orgao_julgador`, foro, vara, juiz, `situacao` (ex.: Extinto), `etiquetas` do cabeçalho e campos auxiliares. O adaptador PJe/TJMG expõe `orgao_julgador`; mantém `foro` como alias compatível, e preenche `vara` apenas quando a fonte fornece esse rótulo separadamente.
 - `partes`: partes principais, todas as partes (repete as principais quando o eSAJ não traz a tabela completa) e polos classificados.
 - `movimentacoes`: data, título, teor, metadados e documentos vinculados.
 - `documentos`: candidatos públicos e restritos por senha.
@@ -46,7 +46,7 @@ Retorna envelope versionado com dados separados por fonte:
 ```json
 {
   "schema_version": "1.0",
-  "package_version": "0.5.3",
+  "package_version": "0.6.0",
   "status": "ok",
   "numero_cnj": "0015020-23.2010.8.26.0053",
   "sources": ["esaj", "datajud", "djen"],

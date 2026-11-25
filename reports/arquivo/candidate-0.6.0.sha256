@@ -1,0 +1,7 @@
+3472CFC90A637A93B8EF098CE0BE93F025929122E077E419FCDFBB16B14ADDBD  nanojud-0.6.0-py3-none-any.whl
+B36F8070B971FE2FD8A65F2E6A723D62DF796F4CB250537225CF4B9EA20781A1  nanojud-0.6.0.tar.gz
+# Candidate rebuilt 2026-11-13 after typed e-SAJ parser, DJEN unknown-state correction, and delayed e-SAJ session creation.
+# Wheel: 140158 bytes; sdist: 360540 bytes; exact wheel installed in .tmp/candidate-0.6.0-djen (Python 3.12.10).
+# site-packages import, 100-movement live e-SAJ partial result, MCP stdio 24 tools, uv pip check and twine check passed.
+# Authentication session-order change has offline regression coverage; no real interactive login was performed.
+# Sol S4 remains pending; nothing has been published.

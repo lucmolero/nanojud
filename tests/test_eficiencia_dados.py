@@ -1,6 +1,7 @@
 import threading
 import time
 
+import pytest
 from bs4 import BeautifulSoup
 
 from nanojud import api, cli, compactacao, esaj, extraction, mcp_server
@@ -146,7 +147,11 @@ def _fontes_falsas(monkeypatch, atraso_datajud=0.0):
     def falso_esaj(numero, **kwargs):
         inicio["esaj"] = time.monotonic()
         time.sleep(0.2)
-        return {"dados_basicos": {"numero": numero}, "movimentacoes": [{"data": "01/01/2026"}]}
+        return {
+            "dados_basicos": {"numero": numero},
+            "movimentacoes": [{"data": "01/01/2026"}],
+            "origem": {"movimentacoes_completas": True},
+        }
 
     def falso_datajud(numero, **kwargs):
         inicio["datajud"] = time.monotonic()
@@ -163,11 +168,11 @@ def _fontes_falsas(monkeypatch, atraso_datajud=0.0):
     def falso_djen(numero, data_inicio="", **kwargs):
         inicio["djen"] = time.monotonic()
         inicio["djen_data_inicio"] = data_inicio
-        return []
+        return {"status": "ok", "completo": True, "paginas": 1, "avisos": [], "comunicacoes": []}
 
     monkeypatch.setattr(extraction.esaj, "montar_extrato", falso_esaj)
     monkeypatch.setattr(extraction.datajud, "consultar_processo", falso_datajud)
-    monkeypatch.setattr(extraction.djen, "consultar_processo", falso_djen)
+    monkeypatch.setattr(extraction.djen, "consultar_processo_detalhado", falso_djen)
     return inicio
 
 
@@ -302,6 +307,12 @@ def test_mcp_gerar_timeline_recentes_limita_busca_e_repassa_desde(monkeypatch):
 
 def test_mcp_extrair_processo_e_consultar_esaj_sao_compactos_por_padrao(monkeypatch):
     monkeypatch.setattr(mcp_server, "FastMCP", _FastMCP)
+
+    class ClienteFalso:
+        def get_extrato(self, numero, **kwargs):
+            return {"movimentacoes": [{"titulo": "a", "texto": "repetido"}]}
+
+    monkeypatch.setattr(mcp_server, "NanoJudClient", ClienteFalso)
     monkeypatch.setattr(
         mcp_server.api,
         "extract_process",
@@ -335,6 +346,69 @@ def test_prazo_total_nao_deixa_threads_presas_no_resultado(monkeypatch):
 
     assert envelope["source_status"]["esaj"]["status"] == "error"
     assert "datajud" in envelope["data"]
+
+
+def test_fontes_que_excedem_prazo_nao_criam_threads_sem_limite(monkeypatch):
+    iniciar = threading.Event()
+    liberar = threading.Event()
+    threads_iniciadas = set()
+    lock = threading.Lock()
+
+    def fonte_lenta(*args, **kwargs):
+        with lock:
+            threads_iniciadas.add(threading.current_thread().ident)
+        iniciar.set()
+        liberar.wait(2)
+        return {}
+
+    monkeypatch.setattr(extraction.esaj, "montar_extrato", fonte_lenta)
+
+    for _ in range(40):
+        extraction.extract_process(TJSP, sources=("esaj",), prazo_total=0.01)
+
+    assert iniciar.is_set()
+    assert len(threads_iniciadas) <= extraction.MAX_SOURCE_WORKERS
+    liberar.set()
+
+
+def test_fonte_sem_vaga_global_expira_sem_ser_enfileirada(monkeypatch):
+    monkeypatch.setattr(extraction, "_SOURCE_CAPACITY", threading.BoundedSemaphore(0))
+    monkeypatch.setattr(
+        extraction.esaj,
+        "montar_extrato",
+        lambda *args, **kwargs: pytest.fail("A fonte sem vaga não deve ser enfileirada"),
+    )
+
+    inicio = time.monotonic()
+    envelope = extraction.extract_process(TJSP, sources=("esaj",), prazo_total=0.02)
+
+    assert time.monotonic() - inicio < 0.5
+    assert envelope["source_status"]["esaj"]["status"] == "error"
+    assert envelope["source_status"]["esaj"]["type"] == "TimeoutError"
+
+
+@pytest.mark.parametrize("timeout", [None, 0, -1, float("nan"), float("inf"), 86401, 1e100, True])
+def test_extract_process_rejeita_timeout_de_rede_sem_limite(timeout, monkeypatch):
+    monkeypatch.setattr(
+        extraction.esaj,
+        "montar_extrato",
+        lambda *args, **kwargs: pytest.fail("A fonte não deve iniciar"),
+    )
+
+    with pytest.raises(ValueError, match="timeout"):
+        extraction.extract_process(TJSP, sources=("esaj",), timeout=timeout)
+
+
+@pytest.mark.parametrize("prazo_total", [-1, float("nan"), float("inf"), 86401, 1e100, True])
+def test_extract_process_rejeita_prazo_total_invalido(prazo_total):
+    with pytest.raises(ValueError, match="prazo_total"):
+        extraction.extract_process(TJSP, sources=("esaj",), prazo_total=prazo_total)
+
+
+@pytest.mark.parametrize("datajud_retry", [0, -1, 1.5, True])
+def test_extract_process_rejeita_retry_datajud_invalido(datajud_retry):
+    with pytest.raises(ValueError, match="datajud_retry"):
+        extraction.extract_process(TJSP, sources=("datajud",), datajud_retry=datajud_retry)
 
 
 # --- bloqueio por consultas simultâneas do eSAJ ----------------------------------------------

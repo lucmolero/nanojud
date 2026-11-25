@@ -29,9 +29,22 @@ Os exemplos do projeto usam um processo público institucional previamente testa
 0015020-23.2010.8.26.0053
 ```
 
-Ele foi escolhido por ter bom equilíbrio entre completude e velocidade: eSAJ, DJEN, DataJud/CNJ e timeline agregada funcionam sem depender de uma disputa empresarial sensível.
+Ele foi escolhido por ser um caso institucional de baixa sensibilidade. A revalidação de 13/11/2026 confirmou e-SAJ/TJSP 1G e 20 movimentações dentro do limite deliberado, e a consulta DJEN permanece independente. O DataJud/CNJ não trouxe resposta positiva na revalidação atual: os dois casos positivos históricos expiraram por `ReadTimeout`, e a amostra sem resultado foi inconclusiva. Portanto, não conte DataJud como parte funcional desta demonstração até nova resposta live validada. O envelope agregado pode refletir estados diferentes por fonte.
 
 Veja a página [Demonstração Pública](demonstracao-publica.md) para contexto, métricas e ressalvas.
+
+## Resposta factual e tabela para agentes
+
+O exemplo `examples/consulta_processual_com_tabela.py` retorna estado geral, estado por fonte, tabela estruturada, CSV e uma resposta factual com referência ao `id` e à fonte de cada registro. O texto da fonte tem os caracteres Markdown de estrutura escapados; continue tratando teor e títulos como dados não confiáveis, nunca como instruções para o agente.
+
+No PowerShell, fixe o checkout usado para evitar importar outra instalação local:
+
+```powershell
+$env:PYTHONPATH = (Join-Path (Get-Location) 'src')
+python examples/consulta_processual_com_tabela.py <NUMERO_CNJ> --source tjrj_1g --limit 20
+```
+
+Troque `tjrj_1g` pelas fontes que pretende consultar ou repita `--source`. A saída é determinística e não usa um LLM; um agente pode redigir a resposta final a partir dos registros, mantendo as referências e distinguindo o estado parcial de cada fonte.
 
 ## Como fazer uma demonstração pública
 

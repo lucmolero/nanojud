@@ -1,5 +1,6 @@
 from uuid import uuid4
 
+import pytest
 import requests
 
 from nanojud import esaj
@@ -62,6 +63,7 @@ def test_get_traduz_status_http_previstos():
     for status, esperado in [
         (403, AcessoRestrito),
         (404, ProcessoNaoEncontrado),
+        (429, ConsultaIndisponivel),
         (503, ConsultaIndisponivel),
     ]:
         session = FakeSession()
@@ -75,15 +77,51 @@ def test_get_traduz_status_http_previstos():
             raise AssertionError(f"HTTP {status} deveria gerar {esperado.__name__}")
 
 
+def test_get_usa_timeout_padrao_com_sessao_sem_timeout():
+    class SessionSemTimeout:
+        def __init__(self):
+            self.kwargs = None
+
+        def get(self, url, **kwargs):
+            self.kwargs = kwargs
+            return FakeResponse("", url)
+
+    session = SessionSemTimeout()
+    esaj._get(session, "https://esaj.tjsp.jus.br/cpopg/show.do")
+
+    assert session.kwargs["timeout"] == 30.0
+
+
+@pytest.mark.parametrize(
+    ("opcoes", "campo"),
+    [
+        ({"limite_pecas": True}, "limite_pecas"),
+        ({"limite_pecas": -1}, "limite_pecas"),
+        ({"limite_inspecao_pecas": 1.5}, "limite_inspecao_pecas"),
+        ({"limite_movimentacoes": False}, "limite_movimentacoes"),
+    ],
+)
+def test_montar_extrato_rejeita_limites_invalidos_antes_de_rede(opcoes, campo):
+    class SessionSemRede:
+        def get(self, *args, **kwargs):
+            raise AssertionError("Limites inválidos não devem iniciar request")
+
+    with pytest.raises(ValueError, match=campo):
+        esaj.montar_extrato("1076539-20.2019.8.26.0100", session=SessionSemRede(), **opcoes)
+
+
 def test_get_traduz_falha_de_comunicacao():
     class SessionComErro:
         def get(self, url, **kwargs):
-            raise requests.RequestException("timeout")
+            raise requests.RequestException(
+                "timeout at https://esaj.tjsp.jus.br/cpopg/show.do?ticket=private"
+            )
 
     try:
         esaj._get(SessionComErro(), "https://esaj.tjsp.jus.br/cpopg/show.do")
     except ConsultaIndisponivel as exc:
-        assert "timeout" in str(exc)
+        assert "RequestException" in str(exc)
+        assert "ticket=private" not in str(exc)
     else:
         raise AssertionError("Falha requests deveria gerar ConsultaIndisponivel")
 
