@@ -1,8 +1,8 @@
 # Estado operacional do Goal — NanoJud
 
-<!-- goal-head: f7611c0 -->
+<!-- goal-head: 324f761 -->
 <!-- goal-item: P5 -->
-<!-- goal-tree: d073c5597631 -->
+<!-- goal-tree: f30f4fe59db4 -->
 
 Atualizado em 13/11/2026. Este é o ponto de retomada verificado; não é aceite de release.
 
@@ -447,3 +447,10 @@ Decisão atual: a rota massiva é distinta de JPe-Themis e eproc, mas o resultad
 - `python -m build`, `python -m twine check dist/*`, reinstalação do wheel em `.tmp/p5-final-wheel-venv`, `pip check`, CLI `--versao` e `--help` passaram. MCP stdio no mesmo wheel: handshake, `server_info` (0.6.0/stdio), 26 ferramentas e `gerar_tabela` sintético preservando `status_fonte=partial` passaram. Hashes novos em `reports/arquivo/candidate-0.6.0-sol-2026-11-25.sha256`.
 - A auditoria não transforma a candidata em release aceita: P4 continua com itens de reprodução editorial e avaliação acessível/zoom descritos em `docs/checagem-editorial-lancamento.md`. A matriz continua amostral e eproc/TJSP, eproc/TJMG, DataJud recente e autos completos têm limites documentados. Sem tag de release ou publicação PyPI nesta etapa.
 - `.nanojud_cache/` foi preservada e excluída do versionamento por poder conter saída local de consulta. O commit preparado deve incluir código, documentação, testes e evidências versionáveis, sem credenciais, PDFs baixados nem cache. Próxima ação: gravar o checkpoint versionado e acompanhar CI do GitHub; deixar criação da tag `v0.6.0` para depois do aceite editorial e do veredito formal de lançamento.
+
+### Sincronização no GitHub após o checkpoint — 25/11/2026
+
+- O commit `324f7614d3b51b6e50e1dc5bc61403bd59647d2e` está na branch remota `codex/nanojud-0.6.0-candidate`. O push direto para `main` foi recusado pela proteção da branch (PR obrigatório e cinco checks obrigatórios); nenhuma regra foi contornada.
+- PR em rascunho: https://github.com/lucmolero/nanojud/pull/34. Checks remotos concluídos com sucesso: Analyze, CodeQL e Python 3.11, 3.12, 3.13 e 3.14. O PR foi mantido sem merge.
+- Não existe tag `v0.6.0` nesta etapa. O workflow `.github/workflows/release.yml` publica um GitHub Release quando uma tag `v*` é enviada; o gate editorial P4 continua aberto, então a tag/publicação ficam adiadas. O metadata e o código já têm versão `0.6.0` candidata.
+- `.nanojud_cache/` segue no checkout local, fora do commit e do push. Os arquivos versionáveis foram preservados no GitHub. A cópia local da pasta não deve ser confundida com a distribuição nem com dado necessário para reconstruir o commit.
